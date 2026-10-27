@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { frontendApi } from "./clerk.ts";
-import { isDskUrl, onDskDomain } from "./sign-in.ts";
-import { parseUrn, pplPerson } from "./urn.ts";
+import { frontendApi } from "./clerk";
+import { isDskUrl, onDskDomain } from "./sign-in";
+import { parseUrn, pplPerson } from "./urn";
 
 describe("sign-in", () => {
   test("returns only to https places in the suite", () => {
