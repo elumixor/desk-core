@@ -1,0 +1,462 @@
+/*
+ * The desk suite's visual system: one set of custom properties every app reads, light and dark, plus a Tailwind 4
+ * `@theme` block that exposes them as utilities (`bg-surface`, `text-ink-45`, `rounded-lg`, `shadow-soft`, …).
+ *
+ *   @import "tailwindcss";
+ *   @import "@desk/core/tokens.css";
+ *
+ * The page follows the system's light or dark unless the root says otherwise: `data-theme="light" | "dark"` forces
+ * a mode, `data-palette="<id>"` picks one of the named palettes (`themes.ts` lists them and applies a choice).
+ * Everything an app draws reads the base colours below or the ink steps derived from them, so a palette is
+ * the whole look. An app extends it by redefining any property on `:root` after this import.
+ */
+
+/* ---- base: shape, type, motion — the same in every mode ------------------------------------------ */
+:root {
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r: 10px;
+  --r-lg: 14px;
+  --r-xl: 19px;
+  --radius: var(--r);
+  --r-pill: 999px;
+
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: "SF Pro Rounded", ui-rounded, -apple-system, "Inter", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  /* Type steps: a meta line, the interface's own words, a message. Each with its line height. */
+  --meta: 11px;
+  --meta-lh: 14px;
+  --ui: 14px;
+  --ui-lh: 20px;
+  --body: 15px;
+  --body-lh: 22px;
+
+  /* Spacing: a 4px grid, and the page's outer gutter. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --gutter: 50px;
+
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-spring: cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* ---- light (the default): Nord Light ------------------------------------------------------------- */
+:root {
+  --bg: #e5e9f0;
+  --panel: #f8f9fb;
+  --panel-2: #eceff4;
+  --line: #d8dee9;
+  --line-2: #c5cdd9;
+  --text: #2e3440;
+  --dim: #4c566a;
+  --accent: #5e81ac;
+  --accent-ink: #ffffff;
+  --busy: #b4842c;
+  --idle: #4f7a3a;
+  --warn: #b4593c;
+  --hot: #a3434d;
+  --code-bg: #eceff4;
+  --selection: #d3dfee;
+
+  --canvas: #e5e9f0;
+  --canvas-gradient: linear-gradient(238deg, #eceff4 15%, #e5e9f0 95%);
+  --surface: #f8f9fb;
+  --surface-2: #eef1f5;
+  --surface-3: #e9edf2;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --soft-shadow: 0 1px 2px rgba(46, 52, 64, 0.06), 0 10px 30px rgba(46, 52, 64, 0.08);
+  --card-shadow: 0 3px 6px rgba(46, 52, 64, 0.08);
+  --panel-edge: 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent), 0 1px 2px rgba(0, 0, 0, 0.04);
+  /* What waits on the person, an action, a result, the model and the effort. */
+  --hand: #c86e50;
+  --act: #4c6f9a;
+  --act-btn: #5e81ac;
+  --ok: #4f7a3a;
+  --model: #5e81ac;
+  --effort: #8c5f86;
+  --mine-bg: #d6e3f0;
+  --pill-bg: #d8dee9;
+
+  --ink: var(--text);
+  /* On a light canvas secondary text keeps more of the ink than the 70/45/30/20 the steps are named for. */
+  --ink-70: color-mix(in srgb, var(--ink) 80%, transparent);
+  --ink-45: color-mix(in srgb, var(--ink) 62%, transparent);
+  --ink-30: color-mix(in srgb, var(--ink) 48%, transparent);
+  --ink-20: color-mix(in srgb, var(--ink) 36%, transparent);
+  --ink-10: color-mix(in srgb, var(--ink) 10%, transparent);
+  --ink-5: color-mix(in srgb, var(--ink) 5%, transparent);
+  --backdrop: rgba(0, 0, 0, 0.35);
+  color-scheme: light;
+}
+
+/* ---- dark: pai Dark, when the system asks for it or the root forces it ---------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0d12;
+    --panel: #11141b;
+    --panel-2: #161a23;
+    --line: #1f2430;
+    --line-2: #2a3040;
+    --text: #d6dae2;
+    --dim: #7f8797;
+    --accent: #8b9cff;
+    --accent-ink: #0b0d12;
+    --busy: #e5b567;
+    --idle: #7fd08a;
+    --warn: #f2a25b;
+    --hot: #f27d7d;
+    --code-bg: #0d0f14;
+    --selection: #2d3550;
+    --canvas: var(--bg);
+    --canvas-gradient: var(--bg);
+    --surface: var(--panel);
+    --surface-2: var(--panel-2);
+    --surface-3: var(--code-bg);
+    --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    --soft-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 10px 28px rgba(0, 0, 0, 0.22);
+    --card-shadow: 0 5px 5px rgba(0, 0, 0, 0.18);
+    --panel-edge: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --hand: #ffa733;
+    --act: #ff8a3d;
+    --act-btn: rgba(255, 138, 61, 0.78);
+    --ok: #6fcf7a;
+    --model: #6ba6ff;
+    --effort: #ff9a5c;
+    --mine-bg: rgba(255, 255, 255, 0.07);
+    --pill-bg: rgba(255, 255, 255, 0.1);
+    /* On a dark canvas ink reads brighter than it measures: the steps sit higher so small text clears 3:1. */
+    --ink-70: color-mix(in srgb, var(--ink) 78%, transparent);
+    --ink-45: color-mix(in srgb, var(--ink) 58%, transparent);
+    --ink-30: color-mix(in srgb, var(--ink) 46%, transparent);
+    --ink-20: color-mix(in srgb, var(--ink) 36%, transparent);
+    --backdrop: rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0d12;
+  --panel: #11141b;
+  --panel-2: #161a23;
+  --line: #1f2430;
+  --line-2: #2a3040;
+  --text: #d6dae2;
+  --dim: #7f8797;
+  --accent: #8b9cff;
+  --accent-ink: #0b0d12;
+  --busy: #e5b567;
+  --idle: #7fd08a;
+  --warn: #f2a25b;
+  --hot: #f27d7d;
+  --code-bg: #0d0f14;
+  --selection: #2d3550;
+  --canvas: var(--bg);
+  --canvas-gradient: var(--bg);
+  --surface: var(--panel);
+  --surface-2: var(--panel-2);
+  --surface-3: var(--code-bg);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --soft-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 10px 28px rgba(0, 0, 0, 0.22);
+  --card-shadow: 0 5px 5px rgba(0, 0, 0, 0.18);
+  --panel-edge: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --hand: #ffa733;
+  --act: #ff8a3d;
+  --act-btn: rgba(255, 138, 61, 0.78);
+  --ok: #6fcf7a;
+  --model: #6ba6ff;
+  --effort: #ff9a5c;
+  --mine-bg: rgba(255, 255, 255, 0.07);
+  --pill-bg: rgba(255, 255, 255, 0.1);
+  --ink-70: color-mix(in srgb, var(--ink) 78%, transparent);
+  --ink-45: color-mix(in srgb, var(--ink) 58%, transparent);
+  --ink-30: color-mix(in srgb, var(--ink) 46%, transparent);
+  --ink-20: color-mix(in srgb, var(--ink) 36%, transparent);
+  --backdrop: rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+/* ---- named palettes: the base colours of each; the mode block above supplies the rest ------------- */
+:root[data-palette="one-dark"] {
+  --bg: #21252b;
+  --panel: #282c34;
+  --panel-2: #2c313a;
+  --line: #3e4451;
+  --line-2: #4b5263;
+  --text: #abb2bf;
+  --dim: #7f848e;
+  --accent: #61afef;
+  --accent-ink: #282c34;
+  --busy: #e5c07b;
+  --idle: #98c379;
+  --warn: #d19a66;
+  --hot: #e06c75;
+  --code-bg: #282c34;
+  --selection: #3e4451;
+}
+:root[data-palette="dracula"] {
+  --bg: #21222c;
+  --panel: #282a36;
+  --panel-2: #343746;
+  --line: #3b3d4d;
+  --line-2: #44475a;
+  --text: #f8f8f2;
+  --dim: #6272a4;
+  --accent: #bd93f9;
+  --accent-ink: #282a36;
+  --busy: #f1fa8c;
+  --idle: #50fa7b;
+  --warn: #ffb86c;
+  --hot: #ff5555;
+  --code-bg: #282a36;
+  --selection: #44475a;
+}
+:root[data-palette="nord"] {
+  --bg: #242933;
+  --panel: #2e3440;
+  --panel-2: #3b4252;
+  --line: #3b4252;
+  --line-2: #434c5e;
+  --text: #d8dee9;
+  --dim: #7b88a1;
+  --accent: #88c0d0;
+  --accent-ink: #2e3440;
+  --busy: #ebcb8b;
+  --idle: #a3be8c;
+  --warn: #d08770;
+  --hot: #bf616a;
+  --code-bg: #2e3440;
+  --selection: #434c5e;
+}
+:root[data-palette="tokyo-night"] {
+  --bg: #16161e;
+  --panel: #1a1b26;
+  --panel-2: #1f2335;
+  --line: #292e42;
+  --line-2: #3b4261;
+  --text: #c0caf5;
+  --dim: #565f89;
+  --accent: #7aa2f7;
+  --accent-ink: #1a1b26;
+  --busy: #e0af68;
+  --idle: #9ece6a;
+  --warn: #ff9e64;
+  --hot: #f7768e;
+  --code-bg: #1a1b26;
+  --selection: #283457;
+}
+:root[data-palette="catppuccin-mocha"] {
+  --bg: #181825;
+  --panel: #1e1e2e;
+  --panel-2: #313244;
+  --line: #313244;
+  --line-2: #45475a;
+  --text: #cdd6f4;
+  --dim: #7f849c;
+  --accent: #cba6f7;
+  --accent-ink: #1e1e2e;
+  --busy: #f9e2af;
+  --idle: #a6e3a1;
+  --warn: #fab387;
+  --hot: #f38ba8;
+  --code-bg: #1e1e2e;
+  --selection: #45475a;
+}
+:root[data-palette="gruvbox-dark"] {
+  --bg: #1d2021;
+  --panel: #282828;
+  --panel-2: #32302f;
+  --line: #3c3836;
+  --line-2: #504945;
+  --text: #ebdbb2;
+  --dim: #928374;
+  --accent: #fabd2f;
+  --accent-ink: #282828;
+  --busy: #fabd2f;
+  --idle: #b8bb26;
+  --warn: #fe8019;
+  --hot: #fb4934;
+  --code-bg: #282828;
+  --selection: #504945;
+}
+
+/* Light palettes are surface-led: the mode's derived surfaces come from the base, so each sets its own. */
+:root[data-palette="pai-light"] {
+  --bg: #ebe6e1;
+  --panel: #ffffff;
+  --panel-2: #f4efea;
+  --line: #dfdad5;
+  --line-2: #cfc9c3;
+  --text: #000000;
+  --dim: #6b6763;
+  --accent: #cb5800;
+  --accent-ink: #ffffff;
+  --busy: #ff9100;
+  --idle: #086c0b;
+  --warn: #cb5800;
+  --hot: #c8102e;
+  --code-bg: #f7f3ef;
+  --selection: #f4dcc4;
+  --canvas: #ebe6e1;
+  --canvas-gradient: linear-gradient(238.35deg, #ebe6e1 17.91%, #ece4df 95.11%);
+  --surface: #ffffff;
+  --surface-2: color-mix(in srgb, #ffffff 50%, var(--bg));
+  --surface-3: color-mix(in srgb, #ffffff 25%, var(--bg));
+  --soft-shadow: 0 1px 2px rgba(60, 40, 30, 0.06), 0 10px 30px rgba(60, 40, 30, 0.07);
+  --card-shadow: 0 5px 5px rgba(0, 0, 0, 0.05);
+  --hand: #ff9100;
+  --act: #cb5800;
+  --act-btn: rgba(253, 124, 26, 0.78);
+  --ok: #086c0b;
+  --model: #0061e0;
+  --effort: #c84601;
+  --mine-bg: rgba(251, 238, 219, 0.76);
+  --pill-bg: #dfdad5;
+}
+:root[data-palette="github-light"] {
+  --bg: #f6f8fa;
+  --panel: #ffffff;
+  --panel-2: #f6f8fa;
+  --line: #d0d7de;
+  --line-2: #c4ccd4;
+  --text: #1f2328;
+  --dim: #656d76;
+  --accent: #0969da;
+  --accent-ink: #ffffff;
+  --busy: #bf8700;
+  --idle: #1a7f37;
+  --warn: #bc4c00;
+  --hot: #cf222e;
+  --code-bg: #ffffff;
+  --selection: #ddf4ff;
+  --canvas: var(--bg);
+  --canvas-gradient: var(--bg);
+  --surface: var(--panel);
+  --surface-2: color-mix(in srgb, var(--panel) 50%, var(--bg));
+  --surface-3: color-mix(in srgb, var(--panel) 25%, var(--bg));
+  --hand: var(--warn);
+  --act: var(--accent);
+  --act-btn: var(--accent);
+  --ok: var(--idle);
+  --model: var(--accent);
+  --effort: var(--warn);
+  --mine-bg: color-mix(in srgb, var(--accent) 13%, var(--panel));
+  --pill-bg: var(--line);
+}
+:root[data-palette="solarized-light"] {
+  --bg: #eee8d5;
+  --panel: #fdf6e3;
+  --panel-2: #f5efdc;
+  --line: #e3dcc6;
+  --line-2: #d3ccb4;
+  --text: #586e75;
+  --dim: #93a1a1;
+  --accent: #268bd2;
+  --accent-ink: #fdf6e3;
+  --busy: #b58900;
+  --idle: #859900;
+  --warn: #cb4b16;
+  --hot: #dc322f;
+  --code-bg: #fdf6e3;
+  --selection: #e6dfc8;
+  --canvas: var(--bg);
+  --canvas-gradient: var(--bg);
+  --surface: var(--panel);
+  --surface-2: color-mix(in srgb, var(--panel) 50%, var(--bg));
+  --surface-3: color-mix(in srgb, var(--panel) 25%, var(--bg));
+  --hand: var(--warn);
+  --act: var(--accent);
+  --act-btn: var(--accent);
+  --ok: var(--idle);
+  --model: var(--accent);
+  --effort: var(--warn);
+  --mine-bg: color-mix(in srgb, var(--accent) 13%, var(--panel));
+  --pill-bg: var(--line);
+}
+:root[data-palette="catppuccin-latte"] {
+  --bg: #e6e9ef;
+  --panel: #eff1f5;
+  --panel-2: #e6e9ef;
+  --line: #ccd0da;
+  --line-2: #bcc0cc;
+  --text: #4c4f69;
+  --dim: #8c8fa1;
+  --accent: #8839ef;
+  --accent-ink: #eff1f5;
+  --busy: #df8e1d;
+  --idle: #40a02b;
+  --warn: #fe640b;
+  --hot: #d20f39;
+  --code-bg: #eff1f5;
+  --selection: #ccd0da;
+  --canvas: var(--bg);
+  --canvas-gradient: var(--bg);
+  --surface: var(--panel);
+  --surface-2: color-mix(in srgb, var(--panel) 50%, var(--bg));
+  --surface-3: color-mix(in srgb, var(--panel) 25%, var(--bg));
+  --hand: var(--warn);
+  --act: var(--accent);
+  --act-btn: var(--accent);
+  --ok: var(--idle);
+  --model: var(--accent);
+  --effort: var(--warn);
+  --mine-bg: color-mix(in srgb, var(--accent) 13%, var(--panel));
+  --pill-bg: var(--line);
+}
+
+/* ---- Tailwind: the same tokens as utilities ------------------------------------------------------ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-ink: var(--ink);
+  --color-ink-70: var(--ink-70);
+  --color-ink-45: var(--ink-45);
+  --color-ink-30: var(--ink-30);
+  --color-ink-20: var(--ink-20);
+  --color-ink-10: var(--ink-10);
+  --color-ink-5: var(--ink-5);
+  --color-dim: var(--dim);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-act: var(--act);
+  --color-hand: var(--hand);
+  --color-ok: var(--ok);
+  --color-busy: var(--busy);
+  --color-warn: var(--warn);
+  --color-hot: var(--hot);
+  --color-model: var(--model);
+  --color-effort: var(--effort);
+  --color-mine: var(--mine-bg);
+  --font-ui: var(--font-ui);
+  --font-body: var(--font-body);
+  --font-mono: var(--mono);
+  --text-meta: var(--meta);
+  --text-meta--line-height: var(--meta-lh);
+  --text-ui: var(--ui);
+  --text-ui--line-height: var(--ui-lh);
+  --text-body: var(--body);
+  --text-body--line-height: var(--body-lh);
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --shadow-soft: var(--soft-shadow);
+  --shadow-card: var(--card-shadow);
+  --shadow-panel: var(--panel-edge);
+  --spacing: 4px;
+  --ease-out: var(--ease);
+  --ease-spring: var(--ease-spring);
+}

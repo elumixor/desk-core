@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs.",
+  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs, the design tokens and themes.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/tokens.css"
   },
   "scripts": {
     "check": "tsc --noEmit",
