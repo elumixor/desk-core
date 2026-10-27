@@ -12,8 +12,8 @@ export interface Urn {
 }
 
 export const parseUrn = (urn: string): Urn | null => {
-  const match = URN.exec(urn);
-  return match ? { app: match[1], kind: match[2], id: match[3] } : null;
+  const [, app, kind, id] = URN.exec(urn) ?? [];
+  return app && kind && id ? { app, kind, id } : null;
 };
 
 export const formatUrn = ({ app, kind, id }: Urn) => `${app}:${kind}/${id}`;
