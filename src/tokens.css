@@ -42,6 +42,30 @@
   --space-8: 32px;
   --gutter: 50px;
 
+  /* Tag hues: a tag is its hue mixed into the surface at --tag-mix, so it stays soft on every palette. */
+  --tag-mix: 16%;
+  --hue-gray: #8a8f98;
+  --hue-brown: #9f6b53;
+  --hue-orange: #e07b39;
+  --hue-yellow: #d9a520;
+  --hue-green: #3f9a5c;
+  --hue-blue: #3b7dd8;
+  --hue-purple: #8c5fd0;
+  --hue-pink: #d0559a;
+  --hue-red: #d9534f;
+  --tag-gray: color-mix(in srgb, var(--hue-gray) var(--tag-mix), var(--surface));
+  --tag-brown: color-mix(in srgb, var(--hue-brown) var(--tag-mix), var(--surface));
+  --tag-orange: color-mix(in srgb, var(--hue-orange) var(--tag-mix), var(--surface));
+  --tag-yellow: color-mix(in srgb, var(--hue-yellow) var(--tag-mix), var(--surface));
+  --tag-green: color-mix(in srgb, var(--hue-green) var(--tag-mix), var(--surface));
+  --tag-blue: color-mix(in srgb, var(--hue-blue) var(--tag-mix), var(--surface));
+  --tag-purple: color-mix(in srgb, var(--hue-purple) var(--tag-mix), var(--surface));
+  --tag-pink: color-mix(in srgb, var(--hue-pink) var(--tag-mix), var(--surface));
+  --tag-red: color-mix(in srgb, var(--hue-red) var(--tag-mix), var(--surface));
+  --tag-ink: var(--ink);
+  /* An accent wash (selection, a drop target, today) and the floating layer's lift (menus, popovers, a peek). */
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, var(--surface));
+
   --dur-fast: 120ms;
   --dur-base: 200ms;
   --dur-slow: 320ms;
@@ -76,6 +100,8 @@
   --soft-shadow: 0 1px 2px rgba(46, 52, 64, 0.06), 0 10px 30px rgba(46, 52, 64, 0.08);
   --card-shadow: 0 3px 6px rgba(46, 52, 64, 0.08);
   --panel-edge: 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --float-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 6%, transparent), 0 3px 6px rgba(46, 52, 64, 0.06),
+    0 9px 24px rgba(46, 52, 64, 0.12);
   /* What waits on the person, an action, a result, the model and the effort. */
   --hand: #c86e50;
   --act: #4c6f9a;
@@ -125,6 +151,9 @@
     --soft-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 10px 28px rgba(0, 0, 0, 0.22);
     --card-shadow: 0 5px 5px rgba(0, 0, 0, 0.18);
     --panel-edge: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent), 0 1px 2px rgba(0, 0, 0, 0.2);
+    --float-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent), 0 3px 6px rgba(0, 0, 0, 0.25),
+      0 9px 24px rgba(0, 0, 0, 0.4);
+    --tag-mix: 24%;
     --hand: #ffa733;
     --act: #ff8a3d;
     --act-btn: rgba(255, 138, 61, 0.78);
@@ -167,6 +196,9 @@
   --soft-shadow: 0 1px 2px rgba(0, 0, 0, 0.18), 0 10px 28px rgba(0, 0, 0, 0.22);
   --card-shadow: 0 5px 5px rgba(0, 0, 0, 0.18);
   --panel-edge: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --float-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent), 0 3px 6px rgba(0, 0, 0, 0.25),
+    0 9px 24px rgba(0, 0, 0, 0.4);
+  --tag-mix: 24%;
   --hand: #ffa733;
   --act: #ff8a3d;
   --act-btn: rgba(255, 138, 61, 0.78);
@@ -439,6 +471,17 @@
   --color-model: var(--model);
   --color-effort: var(--effort);
   --color-mine: var(--mine-bg);
+  --color-accent-soft: var(--accent-soft);
+  --color-tag-gray: var(--tag-gray);
+  --color-tag-brown: var(--tag-brown);
+  --color-tag-orange: var(--tag-orange);
+  --color-tag-yellow: var(--tag-yellow);
+  --color-tag-green: var(--tag-green);
+  --color-tag-blue: var(--tag-blue);
+  --color-tag-purple: var(--tag-purple);
+  --color-tag-pink: var(--tag-pink);
+  --color-tag-red: var(--tag-red);
+  --color-tag-ink: var(--tag-ink);
   --font-ui: var(--font-ui);
   --font-body: var(--font-body);
   --font-mono: var(--mono);
@@ -456,6 +499,7 @@
   --shadow-soft: var(--soft-shadow);
   --shadow-card: var(--card-shadow);
   --shadow-panel: var(--panel-edge);
+  --shadow-float: var(--float-shadow);
   --spacing: 4px;
   --ease-out: var(--ease);
   --ease-spring: var(--ease-spring);
