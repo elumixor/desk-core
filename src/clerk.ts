@@ -1,7 +1,6 @@
 import type { Clerk } from "@clerk/clerk-js";
 
 type ClerkUiConstructor = NonNullable<NonNullable<NonNullable<Parameters<Clerk["load"]>[0]>["ui"]>["ClerkUI"]>;
-type LoadOptions = Omit<NonNullable<Parameters<Clerk["load"]>[0]>, "ui">;
 
 export class ClerkLoadError extends Error {
   constructor(what: string) {
@@ -31,17 +30,12 @@ export function loadClerkUi(publishableKey: string) {
 }
 
 /** A loaded Clerk with its components, or the reason it could not load within `timeoutMs`. */
-export async function startClerk(
-  ClerkClass: typeof Clerk,
-  publishableKey: string,
-  options: LoadOptions = {},
-  timeoutMs = 15_000,
-) {
+export async function startClerk(ClerkClass: typeof Clerk, publishableKey: string, timeoutMs = 15_000) {
   const clerk = new ClerkClass(publishableKey);
   // Where Clerk's own scripts and its test helpers look for the instance.
   (window as unknown as { Clerk: Clerk }).Clerk = clerk;
   await Promise.race([
-    loadClerkUi(publishableKey).then((ClerkUI) => clerk.load({ ...options, ui: { ClerkUI } })),
+    loadClerkUi(publishableKey).then((ClerkUI) => clerk.load({ ui: { ClerkUI } })),
     new Promise((_, reject) => setTimeout(() => reject(new ClerkLoadError("in time")), timeoutMs)),
   ]);
   return clerk;
