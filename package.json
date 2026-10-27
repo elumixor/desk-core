@@ -1,9 +1,9 @@
 {
-  "name": "@dsk/core",
+  "name": "@desk/core",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "What every dsk app shares in the browser: Clerk with its components, the central sign-in on ppl, URNs.",
+  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs.",
   "exports": {
     ".": "./src/index.ts"
   },

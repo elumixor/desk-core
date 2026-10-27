@@ -1,6 +1,6 @@
 /**
  * Names for things across the suite, so one app can point at another's record without knowing its database:
- * `kip:page/<id>`, `ppl:person/<id>`, and whatever else an app mints as `<app>:<kind>/<id>`.
+ * `keep:page/<id>`, `people:person/<id>`, and whatever else an app mints as `<app>:<kind>/<id>`.
  */
 
 const URN = /^([a-z][a-z0-9-]*):([a-z][a-z0-9-]*)\/(.+)$/;
@@ -18,5 +18,5 @@ export const parseUrn = (urn: string): Urn | null => {
 
 export const formatUrn = ({ app, kind, id }: Urn) => `${app}:${kind}/${id}`;
 
-export const kipPage = (id: string) => formatUrn({ app: "kip", kind: "page", id });
-export const pplPerson = (id: string) => formatUrn({ app: "ppl", kind: "person", id });
+export const keepPage = (id: string) => formatUrn({ app: "keep", kind: "page", id });
+export const peoplePerson = (id: string) => formatUrn({ app: "people", kind: "person", id });

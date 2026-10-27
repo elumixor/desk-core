@@ -9,7 +9,7 @@ export class ClerkLoadError extends Error {
   }
 }
 
-/** The Frontend API host a publishable key names: `pk_live_<base64 of "clerk.dsk.atmagaming.com$">`. */
+/** The Frontend API host a publishable key names: `pk_live_<base64 of "clerk.desk.atmagaming.com$">`. */
 export const frontendApi = (publishableKey: string) => atob(publishableKey.split("_")[2] ?? "").slice(0, -1);
 
 /**
