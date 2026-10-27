@@ -8,6 +8,13 @@ What every desk app shares in the browser, as TypeScript source (no build step; 
 - `@desk/core/tokens.css` — the suite's look as CSS custom properties, light and dark, with a Tailwind 4 `@theme` block over them.
 - `PALETTES` / `applyTheme(choice)` / `onSystemTheme(listener)` — the named palettes and choosing between them.
 
+## Run it locally
+
+```sh
+bun install
+bun run dev        # devkit: the tests in watch mode
+```
+
 ## Design tokens
 
 ```css
