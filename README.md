@@ -7,6 +7,8 @@ What every desk app shares in the browser, as TypeScript source (no build step; 
 - `parseUrn` / `formatUrn` / `keepPage` / `peoplePerson` — `<app>:<kind>/<id>` names across the suite.
 - `@desk/core/tokens.css` — the suite's look as CSS custom properties, light and dark, with a Tailwind 4 `@theme` block over them.
 - `PALETTES` / `applyTheme(choice)` / `onSystemTheme(listener)` — the named palettes and choosing between them.
+- `@desk/core/settings` — `<SettingsDialog>`, the suite's settings (Svelte 5): ⌘⇧, opens it, a searchable rail of
+  sections on the left, every section in one scroll on the right.
 
 ## Run it locally
 
@@ -14,6 +16,32 @@ What every desk app shares in the browser, as TypeScript source (no build step; 
 bun install
 bun run dev        # devkit: the tests in watch mode
 ```
+
+## Settings dialog
+
+```svelte
+<script lang="ts">
+  import { SettingsDialog, type SettingsSection } from "@desk/core/settings";
+  import { Palette, Users } from "lucide-svelte";
+
+  const sections: SettingsSection[] = [
+    { id: "members", label: "Members", icon: Users, keywords: "invite people role" },
+    { id: "appearance", label: "Appearance", icon: Palette, keywords: "theme dark light" },
+  ];
+  let open = $state(false);
+</script>
+
+<SettingsDialog {sections} bind:open>
+  {#snippet section(entry)}
+    {#if entry.id === "members"}<Members />{:else}<Appearance />{/if}
+  {/snippet}
+</SettingsDialog>
+```
+
+Render it once near the app's root: it listens for ⌘⇧, itself (`shortcut={false}` to opt out) and closes on Escape.
+`bind:active` is the section in view, so a menu can open it onto one (`active = "members"; open = true`). Search
+matches a section's `label` and `keywords`; each section draws its own heading. It is styled with the tokens below, so
+the app needs `tokens.css` and nothing more.
 
 ## Design tokens
 

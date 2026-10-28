@@ -3,32 +3,44 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs, the design tokens and themes.",
+  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs, the design tokens and themes, the settings dialog.",
   "exports": {
     ".": "./src/index.ts",
+    "./settings": {
+      "svelte": "./src/settings/index.ts",
+      "default": "./src/settings/index.ts"
+    },
     "./tokens.css": "./src/tokens.css"
   },
   "scripts": {
-    "check": "tsc --noEmit",
+    "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "lint": "biome check .",
     "test": "bun test",
     "dev": "devkit dev"
   },
   "peerDependencies": {
-    "@clerk/clerk-js": ">=6.26.0"
+    "@clerk/clerk-js": ">=6.26.0",
+    "svelte": ">=5.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.6",
     "@clerk/clerk-js": "^6.41.0",
     "@elumixor/devkit": "^0.11.2",
     "@types/bun": "latest",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "svelte": "^5.57.3",
+    "svelte-check": "^4.7.7"
   },
   "devkit": {
     "dev": {
       "test": {
         "command": "bun test --watch"
       }
+    }
+  },
+  "peerDependenciesMeta": {
+    "svelte": {
+      "optional": true
     }
   }
 }
