@@ -19,6 +19,7 @@
     resolve,
     onsave,
     onopen,
+    ondone,
     placeholder = "",
     label,
     multiline = false,
@@ -31,6 +32,8 @@
     onsave: (text: string) => unknown;
     /** A pill clicked while the field is not being edited; by default its `href` opens. */
     onopen?: (urn: string, href: string | undefined) => void;
+    /** Editing ended (blur, Enter, Escape), saved or not. */
+    ondone?: () => void;
     placeholder?: string;
     label: string;
     multiline?: boolean;
@@ -97,8 +100,18 @@
     if (!focused) render(text);
   });
 
+  // Focused on mount with the caret at the end, as a field opened to be typed in.
   $effect(() => {
-    if (autofocus && root) void tick().then(() => root?.focus());
+    if (!autofocus || !root) return;
+    void tick().then(() => {
+      if (!root) return;
+      root.focus();
+      const caret = document.createRange();
+      caret.selectNodeContents(root);
+      caret.collapse(false);
+      getSelection()?.removeAllRanges();
+      getSelection()?.addRange(caret);
+    });
   });
 
   $effect(() => {
@@ -238,6 +251,7 @@
     const next = current();
     if (next !== (value ?? "").trim()) void onsave(next);
     render(next);
+    ondone?.();
   }
 
   $effect(() => () => destroyers.forEach((destroy) => destroy()));
