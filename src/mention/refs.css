@@ -1,0 +1,45 @@
+/* A reference in text: a quiet pill with the record's icon and name. */
+.desk-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  margin: 0 1px;
+  padding: 0 6px 0 4px;
+  border-radius: var(--r-xs, 4px);
+  background: var(--ink-5);
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.45;
+  text-decoration: none;
+  vertical-align: baseline;
+  white-space: nowrap;
+  cursor: default;
+  user-select: all;
+}
+
+.desk-ref[data-href] {
+  cursor: pointer;
+}
+
+.desk-ref[data-href]:hover {
+  background: var(--ink-10);
+}
+
+.desk-ref > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.desk-ref img {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.desk-ref-icon {
+  display: inline-grid;
+  place-items: center;
+  color: var(--ink-45);
+}

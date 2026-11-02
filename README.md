@@ -7,6 +7,13 @@ What every desk app shares in the browser, as TypeScript source (no build step; 
 - `parseUrn` / `formatUrn` / `keepPage` / `peoplePerson` — `<app>:<kind>/<id>` names across the suite.
 - `@desk/core/tokens.css` — the suite's look as CSS custom properties, light and dark, with a Tailwind 4 `@theme` block over them.
 - `PALETTES` / `applyTheme(choice)` / `onSystemTheme(listener)` — the named palettes and choosing between them.
+- `menuKey(event)` / `latinKey(event)` / `isPaletteShortcut(event)` — list keys as every desk list reads them: Ctrl+J /
+  Ctrl+K are Down / Up, on any keyboard layout.
+- `fuzzyMatch` / `fuzzyFilter` — finding things by name as the person types, with the characters that matched.
+- `formatRef` / `parseRefs` / `refsIn` / `plainText` — references in plain text: `[Label](<urn>)`.
+- `@desk/core/palette` — `<CommandPalette>`, the suite's ⌘K, and `<ItemList>`, the grouped rows it and every menu draw.
+- `@desk/core/mention` — `<MentionField>`, text that edits in place where `@` points at a record, and `<RefText>`, the same
+  text read-only with its references as pills.
 - `@desk/core/settings` — `<SettingsDialog>`, the suite's settings (Svelte 5): ⌘⇧, opens it, a searchable rail of
   sections on the left, every section in one scroll on the right.
 
@@ -42,6 +49,37 @@ Render it once near the app's root: it listens for ⌘⇧, itself (`shortcut={fa
 `bind:active` is the section in view, so a menu can open it onto one (`active = "members"; open = true`). Search
 matches a section's `label` and `keywords`; each section draws its own heading. It is styled with the tokens below, so
 the app needs `tokens.css` and nothing more.
+
+## ⌘K palette
+
+```svelte
+<script lang="ts">
+  import { CommandPalette, type PaletteItem } from "@desk/core/palette";
+  const items: PaletteItem[] = [
+    { key: "go:home", group: "Go to", label: "Home", icon: House, run: () => goto("/") },
+    { key: "c:1", group: "Categories", label: "Groceries", quiet: true, run: () => goto("/c/1") },
+  ];
+</script>
+
+<CommandPalette {items} search={(query, signal) => api.search(query, { signal })} />
+```
+
+It listens for ⌘K itself (`shortcut={false}` to opt out; `bind:open` to open it from a button). With nothing typed it
+lists the rows that are not `quiet`; typing filters every row by label and `keywords`, best first, groups kept together,
+and adds what `search` returns. Up / Down or Ctrl+J / Ctrl+K move, Enter runs, Escape closes.
+
+## References and `@`
+
+A reference is a Markdown link to a URN, `[Groceries](money:category/12)`, so text that holds them stays text.
+
+```svelte
+<MentionField value={note} label="Note" source={(query) => filterItems(records, query, 8)} resolve={look} onsave={save} />
+<RefText text={note} resolve={look} />
+```
+
+`source` answers what `@query` should offer (`MentionItem`s: list rows with a `urn`); `resolve(urn)` gives a pill its
+current name, icon and `href`, falling back to the label the text holds. The field saves on blur or Enter (`multiline`
+keeps Enter for lines), Escape puts it back; in the menu Up / Down or Ctrl+J / Ctrl+K move, Enter or Tab picks.
 
 ## Design tokens
 

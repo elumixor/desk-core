@@ -3,12 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs, the design tokens and themes, the settings dialog.",
+  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs, references, the design tokens and themes, the settings dialog, the ⌘K palette and the @ mention field.",
   "exports": {
     ".": "./src/index.ts",
     "./settings": {
       "svelte": "./src/settings/index.ts",
       "default": "./src/settings/index.ts"
+    },
+    "./palette": {
+      "svelte": "./src/palette/index.ts",
+      "default": "./src/palette/index.ts"
+    },
+    "./mention": {
+      "svelte": "./src/mention/index.ts",
+      "default": "./src/mention/index.ts"
     },
     "./tokens.css": "./src/tokens.css"
   },
