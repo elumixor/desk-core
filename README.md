@@ -14,6 +14,8 @@ What every desk app shares in the browser, as TypeScript source (no build step; 
 - `@desk/core/palette` — `<CommandPalette>`, the suite's ⌘K, and `<ItemList>`, the grouped rows it and every menu draw.
 - `@desk/core/mention` — `<MentionField>`, text that edits in place where `@` points at a record, and `<RefText>`, the same
   text read-only with its references as pills.
+- `@desk/core/inbox` — `<InboxList>`, what an app tells its person about: rows under headings, unread ones marked,
+  "Mark all read" and optional filters.
 - `@desk/core/settings` — `<SettingsDialog>`, the suite's settings (Svelte 5): ⌘⇧, opens it, a searchable rail of
   sections on the left, every section in one scroll on the right.
 
@@ -80,6 +82,20 @@ A reference is a Markdown link to a URN, `[Groceries](money:category/12)`, so te
 `source` answers what `@query` should offer (`MentionItem`s: list rows with a `urn`); `resolve(urn)` gives a pill its
 current name, icon and `href`, falling back to the label the text holds. The field saves on blur or Enter (`multiline`
 keeps Enter for lines), Escape puts it back; in the menu Up / Down or Ctrl+J / Ctrl+K move, Enter or Tab picks.
+
+## Inbox
+
+The app keeps the notifications and what opening one does; the list draws them the same in every app.
+
+```svelte
+<InboxList {groups} unread={count} filters={[{ value: "relevant", label: "Relevant" }, { value: "all", label: "All" }]} bind:filter onopen={open} onreadall={readAll}>
+  {#snippet lead(item)}<Avatar name={item.actor} />{/snippet}
+</InboxList>
+```
+
+`groups` are `{key, title?, items}`; an item is `{id, title, text?, meta?, unread, quiet?}` (quiet rows are drawn dimmer:
+kept for the record, nothing to act on). `lead` draws a row's avatar or icon, `heading` a group's icon, `aside` something
+at a row's end.
 
 ## Design tokens
 
