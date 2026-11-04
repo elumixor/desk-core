@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs, references, the design tokens and themes, the settings dialog, the ⌘K palette, the @ mention field and the inbox list.",
+  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs, references, the design tokens and themes, the settings dialog, the \u2318K palette, the @ mention field the inbox list and the trash.",
   "exports": {
     ".": "./src/index.ts",
     "./settings": {
@@ -22,7 +22,11 @@
       "svelte": "./src/inbox/index.ts",
       "default": "./src/inbox/index.ts"
     },
-    "./tokens.css": "./src/tokens.css"
+    "./tokens.css": "./src/tokens.css",
+    "./trash": {
+      "svelte": "./src/trash/index.ts",
+      "default": "./src/trash/index.ts"
+    }
   },
   "scripts": {
     "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
