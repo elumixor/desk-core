@@ -1,7 +1,7 @@
 <script lang="ts">
   import ConfirmButton from "./ConfirmButton.svelte";
   import { RESTORE_PATH, TRASH_PATH } from "./icons";
-  import { ago } from "./time";
+  import { ago } from "../time";
 
   /** On something in the trash: since when it has been there, the way back out, and the way out for good. */
   let { since, onrestore, onpurge, days }: { since: number | string; onrestore: () => void; onpurge: () => void; days?: number } = $props();

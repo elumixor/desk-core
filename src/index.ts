@@ -16,4 +16,5 @@ export {
   type ThemeMode,
   themeKind,
 } from "./theme";
+export { ago, brief, clock, day, sameMinute, stamp } from "./time";
 export { formatUrn, keepPage, parseUrn, peoplePerson, type Urn } from "./urn";
