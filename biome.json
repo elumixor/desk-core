@@ -46,6 +46,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/chat/chat.css"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDescendingSpecificity": "off"
+          }
+        }
+      }
     }
   ]
 }

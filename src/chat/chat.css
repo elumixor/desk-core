@@ -1,0 +1,683 @@
+/*
+ * The look of what every conversation shares: the message box, its rings, tool calls, attachments. Plain class names
+ * rather than scoped styles, because a theme made in pai's editor restyles these by selector. On the tokens only.
+ */
+@keyframes chat-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes chat-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.row.tools {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+.compose .grow {
+  flex: 1;
+  min-width: 0;
+}
+.compose .dim,
+.mention .dim {
+  color: var(--dim);
+}
+.compose .ellipsis,
+.row-file-name.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.compose .iconbtn {
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  cursor: pointer;
+}
+.compose button,
+.tool-call-head,
+.tools-head,
+.opt {
+  cursor: pointer;
+}
+.compose-tool,
+.compose-send,
+.opt,
+.tools-head {
+  transition:
+    opacity 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+.compose-send.stop {
+  opacity: 0.9;
+  color: var(--hot);
+}
+.tool-diff {
+  display: block;
+  margin: 2px 0 6px 20px;
+  max-height: min(420px, 45vh);
+  overflow: auto;
+  border-radius: 8px;
+  border: 1px solid var(--ink-10);
+  font: 400 12px / 1.5 var(--mono);
+}
+.tool-diff span {
+  display: block;
+  padding: 0 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.tool-diff .del {
+  background: color-mix(in srgb, var(--hot) 14%, transparent);
+}
+.tool-diff .add {
+  background: color-mix(in srgb, var(--ok) 16%, transparent);
+}
+.compose.dropping {
+  outline: 2px dashed var(--ink-20);
+  outline-offset: 2px;
+}
+.compose-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.prompt-char {
+  color: var(--act);
+  font-weight: 700;
+  line-height: 1.55;
+  padding-top: 4px;
+}
+.compose-foot {
+  display: flex;
+  gap: 10px;
+  font-size: 10.5px;
+  color: var(--ink-30);
+}
+.compose {
+  display: flex;
+  flex: 0 0 auto;
+}
+.mentions {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--panel);
+  overflow: hidden;
+}
+.mention {
+  padding: 5px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+.mention.active,
+.mention:hover {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.mention {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.mention .label {
+  flex: 0 0 auto;
+}
+.mention .dim {
+  font-family: inherit;
+  font-size: 10.5px;
+}
+.row-files {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-self: stretch;
+}
+.row-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+.row-file:hover {
+  border-color: var(--ink-20);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+.row-file .icon {
+  flex: 0 0 auto;
+  color: var(--ink-45);
+}
+button.row-file {
+  width: 100%;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.row-file-name {
+  flex: 1 1 auto;
+}
+.row-paste {
+  max-height: 320px;
+  margin: 0;
+  padding: 8px 10px;
+  overflow: auto;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+  font: 400 12px / 1.5 var(--font-mono, monospace);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.row-file-name {
+  font: 400 var(--body) / var(--body-lh) var(--font-ui);
+}
+.row-file-size {
+  flex: 0 0 auto;
+  color: var(--ink-30);
+  font: 400 var(--meta) / var(--meta-lh) var(--font-ui);
+}
+.row-images {
+  display: grid;
+  gap: 3px;
+  align-self: flex-end;
+  max-width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+.row-images a {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.row-images.one {
+  display: block;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+}
+.row-images.one img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+.row-images.two,
+.row-images.four {
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 118px;
+}
+.row-images.three {
+  grid-template-columns: 1.6fr 1fr;
+  grid-auto-rows: 118px;
+}
+.row-images.three a:first-child {
+  grid-row: span 2;
+}
+.row-images:not(.one) img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.row-images .more-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font: 700 15px / 1 var(--font-ui);
+}
+.row-images a:focus-visible {
+  outline: 2px solid var(--ink-30);
+  outline-offset: 2px;
+}
+.row.tools .tools-head {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font: 400 var(--ui) / var(--ui-lh) var(--font-ui);
+  color: var(--ink-45);
+}
+.row.tools .tools-head .icon {
+  width: 13px;
+  height: 13px;
+}
+.row.tools .tools-head .icon-chevron {
+  width: 11px;
+  height: 11px;
+  transition: transform 0.12s;
+}
+.row.tools.open .tools-head .icon-chevron {
+  transform: rotate(90deg);
+}
+.row.tools.live .tools-head {
+  color: color-mix(in srgb, var(--ink) 60%, transparent);
+}
+.row.tools.live .tools-head > .icon-gear {
+  color: var(--act);
+  animation: chat-spin 2s linear infinite;
+}
+.tools-body {
+  display: none;
+}
+.row.tools.open .tools-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  margin: 8px 0 2px 5px;
+  padding: 0 0 0 12px;
+  border-left: 1px solid var(--ink-10);
+}
+.tool-thinking {
+  margin-bottom: 6px;
+  white-space: pre-wrap;
+  font: italic 400 var(--ui) / var(--ui-lh) var(--font-body);
+  color: var(--ink-45);
+}
+.tool-call {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.tool-call-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+  padding: 3px 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: 400 var(--ui) / var(--ui-lh) var(--font-ui);
+  color: var(--ink-70);
+  cursor: pointer;
+}
+.tool-call-head[disabled] {
+  cursor: default;
+}
+.tool-call-head > .icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--ink-30);
+}
+.tool-call.live .tool-call-head > .icon {
+  color: var(--act);
+  animation: chat-pulse 1.2s ease-in-out infinite;
+}
+.tool-call-what {
+  flex: none;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.tool-call-server {
+  font-weight: 400;
+  color: var(--ink-45);
+}
+.tool-call-arg {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink-45);
+}
+.tool-call-size {
+  flex: none;
+  margin-left: auto;
+  padding-left: 12px;
+  white-space: nowrap;
+  color: var(--ink-20);
+}
+.tool-call-head:not([disabled]):hover .tool-call-what,
+.tool-call-head:not([disabled]):hover .tool-call-size {
+  color: var(--ink);
+}
+.tool-call-head:focus-visible {
+  outline: 1px solid var(--ink-30);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.tool-call-in,
+.tool-call-out {
+  display: none;
+  margin: 2px 0 0 20px;
+  padding: 8px 10px;
+  max-height: min(420px, 45vh);
+  overflow: auto;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 400 12px / 1.5 var(--mono);
+}
+.tool-call-in {
+  border: 1px solid var(--ink-10);
+  color: var(--ink-45);
+}
+.tool-call-out {
+  margin-bottom: 6px;
+  background: var(--ink-10);
+  color: var(--ink-70);
+}
+.tool-call.open .tool-call-in:not(:empty),
+.tool-call.open .tool-call-out {
+  display: block;
+}
+.tool-call.loading .tool-call-out {
+  animation: chat-pulse 1.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tool-call.live .tool-call-head > .icon,
+  .tool-call.loading .tool-call-out {
+    animation: none;
+  }
+}
+.opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 52px;
+  background: var(--act-btn);
+  box-shadow: var(--card-shadow);
+  color: var(--act-ink);
+  font: 700 12.5px / 15px var(--font-ui);
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.opt:hover {
+  opacity: 1;
+}
+a.opt {
+  text-decoration: none;
+}
+.opt.icon-only {
+  padding: 6px 12px;
+  background: #8e8e8e;
+  opacity: 0.5;
+}
+.opt.icon-only:hover {
+  opacity: 0.8;
+}
+.opt.icon-only.faint {
+  opacity: 0.2;
+}
+.opt .icon {
+  width: 15px;
+  height: 15px;
+}
+.chat-compose {
+  width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 12px 10px 12px 19px;
+  border: 0;
+  border-radius: 19px;
+  background: var(--compose-bg);
+  box-shadow: var(--panel-edge), var(--card-shadow);
+  transition: box-shadow var(--dur-base) var(--ease);
+}
+.chat-compose:focus-within {
+  box-shadow: var(--panel-edge), var(--soft-shadow);
+}
+.chat-compose .compose-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+.chat-compose .input {
+  flex: 1;
+  min-height: 35px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-70);
+  font: 400 var(--body) / var(--body-lh) var(--font-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  outline: none;
+}
+.chat-compose .input:empty::before {
+  content: attr(data-placeholder);
+  color: var(--ink-30);
+  pointer-events: none;
+}
+.chat-compose .input.disabled {
+  opacity: 0.5;
+}
+.inline-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+  margin: 0 2px;
+  user-select: none;
+  cursor: default;
+}
+.inline-chip.image {
+  padding: 2px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+}
+.inline-chip.image img {
+  display: block;
+  height: 34px;
+  max-width: 120px;
+  border-radius: 4px;
+}
+.inline-chip.text {
+  padding: 2px 6px 2px 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink, var(--text)) 10%, transparent);
+  color: inherit;
+  opacity: 0.6;
+}
+.chip-remove:hover {
+  opacity: 1;
+}
+.compose-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 0;
+  font: 700 var(--meta) / var(--meta-lh) var(--font-ui);
+  color: var(--ink);
+}
+.compose-foot .note {
+  font-weight: 400;
+  color: var(--hot);
+}
+.compose-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  opacity: 0.4;
+}
+.compose-tool:hover {
+  opacity: 0.8;
+}
+.compose-tool.model {
+  color: var(--model);
+}
+.compose-tool.effort {
+  color: var(--effort);
+}
+.compose-tool .icon {
+  width: 15px;
+  height: 15px;
+}
+.compose-send {
+  width: 27px;
+  height: 27px;
+  border-radius: 6px;
+  color: var(--ink);
+  opacity: 0.5;
+  background: none;
+}
+.compose-send:hover {
+  opacity: 0.9;
+  background: var(--ink-10);
+}
+.compose-pin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--act) 12%, transparent);
+  font: 400 var(--meta) / var(--meta-lh) var(--font-ui);
+  color: var(--act);
+}
+.compose-pin > span {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.chat-compose .mentions {
+  margin-bottom: 8px;
+  border-radius: 12px;
+}
+.rings {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.8;
+  transition: opacity 0.18s ease;
+}
+.rings:hover {
+  opacity: 1;
+}
+.ring-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 700 7px / 9px var(--font-ui);
+  color: var(--ink);
+}
+.ring-mini .disc {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  color: #623f0b;
+  font-size: 7px;
+}
+.ring-mini .disc svg {
+  position: absolute;
+  inset: 0;
+  width: 15px;
+  height: 15px;
+}
+.ring-mini .disc .track {
+  fill: none;
+  stroke: var(--ink-10);
+  stroke-width: 1.5;
+}
+.ring-mini .disc .fill {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.ring-mini.context .disc .fill {
+  stroke: #2979ff;
+}
+.ring-mini.context .disc {
+  color: #1554c0;
+}
+.ring-mini.cool .disc .fill {
+  stroke: #00c853;
+}
+.ring-mini.warm .disc .fill {
+  stroke: #ff9900;
+}
+.ring-mini.hot .disc .fill {
+  stroke: var(--hot);
+}
+.ring-mini.cool .disc {
+  color: #0b620b;
+}
+.ring-mini.warm .disc {
+  color: #623f0b;
+}
+.ring-mini.hot .disc {
+  color: var(--hot);
+}
+:root[data-theme="dark"] .ring-mini .disc {
+  color: var(--ink);
+}
+.ring-mini.none .disc {
+  color: var(--ink-30);
+}
+.ring-mini.none .disc .track {
+  stroke: var(--ink-20);
+  stroke-dasharray: 2 2;
+}
