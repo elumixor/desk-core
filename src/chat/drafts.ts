@@ -50,7 +50,12 @@ const done = <T>(request: IDBRequest<T>) =>
     request.onerror = () => resolve(undefined);
   });
 
-const size = (d: Draft) => d.parts.reduce((n, p) => n + (p.kind === "image" ? p.data.length : p.kind === "ref" ? p.urn.length + p.label.length : p.text.length), 0);
+const size = (d: Draft) =>
+  d.parts.reduce(
+    (n, p) =>
+      n + (p.kind === "image" ? p.data.length : p.kind === "ref" ? p.urn.length + p.label.length : p.text.length),
+    0,
+  );
 
 export async function saveDraft(key: string, parts: readonly DraftPart[]) {
   const db = await open();
