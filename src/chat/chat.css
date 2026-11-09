@@ -456,6 +456,24 @@ a.opt {
 .chat-compose:focus-within {
   box-shadow: var(--panel-edge), var(--soft-shadow);
 }
+/* Something holds what is sent: a red frame, heavier on top, its line set into that edge. */
+.compose.alerted {
+  position: relative;
+  border: 1.5px solid var(--hot);
+  border-top-width: 4px;
+}
+.compose-alert {
+  position: absolute;
+  top: -11px;
+  left: 16px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--hot);
+  color: #fff;
+  font: 600 11px / 16px var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 .chat-compose .compose-row {
   display: flex;
   align-items: flex-end;
@@ -646,6 +664,27 @@ a.opt {
   fill: none;
   stroke-width: 1.5;
   stroke-linecap: round;
+}
+.ring-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.ring-button .disc .action {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.ring-button:hover .disc .value,
+.ring-button:focus-visible .disc .value {
+  visibility: hidden;
+}
+.ring-button:hover .disc .action,
+.ring-button:focus-visible .disc .action {
+  display: inline-flex;
 }
 .ring-mini.context .disc .fill {
   stroke: #2979ff;

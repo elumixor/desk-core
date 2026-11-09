@@ -25,7 +25,7 @@
   import { chatHost, type SlashCommand } from "./host";
   import Icon from "./Icon.svelte";
   import { el, iconNode } from "./icons";
-  import Rings from "./Rings.svelte";
+  import Rings, { type RingMenu } from "./Rings.svelte";
   import { attach as attachVim, type CaretBox, type VimLayer, type VimMode } from "./vim";
 
   /**
@@ -47,6 +47,8 @@
     disabled = "",
     busy = false,
     onstop,
+    alert = "",
+    ringMenu,
   }: {
     placeholder: string;
     /** What is in the box, on every change. */
@@ -67,6 +69,10 @@
     /** A turn is running: an empty box offers to stop it. */
     busy?: boolean;
     onstop?: () => void;
+    /** Something that holds what is sent (the account's limit): a red frame round the box, this line in its top edge. */
+    alert?: string;
+    /** The context ring as a button: pointed at, it turns into one; a click opens these rows. */
+    ringMenu?: RingMenu;
   } = $props();
 
   const FAMILIES = ["fable", "opus", "sonnet", "haiku"] as const;
@@ -465,7 +471,8 @@
   }
 </script>
 
-<footer class="compose {mono ? 'tui-compose' : 'chat-compose'}" class:dropping ondragover={dragOver} ondragleave={() => (dropping = false)} ondrop={drop}>
+<footer class="compose {mono ? 'tui-compose' : 'chat-compose'}" class:dropping class:alerted={Boolean(alert)} ondragover={dragOver} ondragleave={() => (dropping = false)} ondrop={drop}>
+  {#if alert}<span class="compose-alert" role="status">{alert}</span>{/if}
   {#if pin}
     <div class="compose-pin">
       <span class="ellipsis quote-pin"><Icon name={pin.icon} size={10} />{#if pin.from}<b>{pin.from}</b>:{/if} {pin.text}</span>
@@ -513,7 +520,7 @@
       {#if prefsShown?.model}<button class="compose-tool model" title="the model this conversation runs with" bind:this={modelButton} disabled={!setPrefs} onclick={openModels}>{capital(modelName(prefsShown.model))}</button>{/if}
       {#if prefsShown?.effort}<button class="compose-tool effort" title="how hard it thinks" bind:this={effortButton} disabled={!setPrefs} onclick={openEfforts}>{prefsShown.effort}</button>{/if}
       {@render extra?.()}
-      <Rings model={prefsShown?.model} session={session?.()} />
+      <Rings model={prefsShown?.model} session={session?.()} menu={ringMenu} />
       <span class="grow"></span>
       <span class="note">{note}</span>
       {#if busy && onstop && empty}<button class="iconbtn compose-send stop" title="stop (esc)" aria-label="Stop" onclick={onstop}><Icon name="stop" size={15} /></button>{:else}<button class="iconbtn compose-send" title="send (enter)" aria-label="Send" onclick={() => void send()}><Icon name="enter" size={15} /></button>{/if}

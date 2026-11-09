@@ -1,13 +1,24 @@
+<script lang="ts" module>
+  import type { MenuRow } from "./host";
+
+  /** What the context ring offers when it is a button: its rows, and what it says it does. */
+  export interface RingMenu {
+    readonly title: string;
+    readonly rows: readonly MenuRow[];
+  }
+</script>
+
 <script lang="ts">
   import { modelName } from "./format";
   import { chatHost, type UsageWindow } from "./host";
+  import Icon from "./Icon.svelte";
 
   /**
    * The discs in the box's foot, as Claude Code's status line has them: the conversation's context, the session window
    * and the week, each a percent. The time to the reset shows only when it matters: the session past half, the week
    * ahead of its pace and at 10% or more.
    */
-  let { model, session }: { model?: string | null; session?: string } = $props();
+  let { model, session, menu }: { model?: string | null; session?: string; menu?: RingMenu } = $props();
   const R = 6.5;
   const C = 2 * Math.PI * R;
   const CONTEXT_EVERY_MS = 20_000;
@@ -56,17 +67,24 @@
   });
 </script>
 
+{#snippet disc(d: (typeof discs)[number])}
+  <span class="disc">
+    <svg viewBox="0 0 15 15" aria-hidden="true">
+      <circle cx="7.5" cy="7.5" r={R} class="track" />
+      {#if d.percent !== undefined}<circle cx="7.5" cy="7.5" r={R} class="fill" stroke-dasharray={C} stroke-dashoffset={C * (1 - Math.min(100, d.percent) / 100)} transform="rotate(-90 7.5 7.5)" />{/if}
+    </svg>
+    <span class="value">{d.percent ?? "–"}</span>
+    {#if menu && d.key === "context"}<span class="action"><Icon name="refresh" size={9} /></span>{/if}
+  </span>
+  {#if d.time}<span>{d.time}</span>{/if}
+{/snippet}
+
 <span class="rings">
   {#each discs as d (d.key)}
-    <span class="ring-mini {d.level}" title={d.title}>
-      <span class="disc">
-        <svg viewBox="0 0 15 15" aria-hidden="true">
-          <circle cx="7.5" cy="7.5" r={R} class="track" />
-          {#if d.percent !== undefined}<circle cx="7.5" cy="7.5" r={R} class="fill" stroke-dasharray={C} stroke-dashoffset={C * (1 - Math.min(100, d.percent) / 100)} transform="rotate(-90 7.5 7.5)" />{/if}
-        </svg>
-        <span>{d.percent ?? "–"}</span>
-      </span>
-      {#if d.time}<span>{d.time}</span>{/if}
-    </span>
+    {#if menu && d.key === "context"}
+      <button type="button" class="ring-mini ring-button {d.level}" title="{d.title} · {menu.title}" aria-label={menu.title} onclick={(e) => chatHost().menu(e.currentTarget, menu.rows)}>{@render disc(d)}</button>
+    {:else}
+      <span class="ring-mini {d.level}" title={d.title}>{@render disc(d)}</span>
+    {/if}
   {/each}
 </span>
