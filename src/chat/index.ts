@@ -30,6 +30,6 @@ export {
   toolLabel,
 } from "./model";
 export { default as Pictures } from "./Pictures.svelte";
-export { default as Rings } from "./Rings.svelte";
+export { default as Rings, type RingMenu } from "./Rings.svelte";
 export { default as ToolCall } from "./ToolCall.svelte";
 export { default as ToolsRow } from "./ToolsRow.svelte";
