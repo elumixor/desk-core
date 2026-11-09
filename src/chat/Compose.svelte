@@ -20,6 +20,12 @@
 
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { chip as refChip } from "../mention/chip";
+  import "../mention/refs.css";
+  import type { MentionItem, MentionSource, RefResolver } from "../mention/types";
+  import ItemList from "../palette/ItemList.svelte";
+  import { menuKey } from "../keys";
+  import { formatRef, type Ref } from "../refs";
   import { clearDraft, type DraftPart, loadDraft, saveDraft } from "./drafts";
   import { capital, modelName, sizeOf } from "./format";
   import { chatHost, type SlashCommand } from "./host";
@@ -31,7 +37,8 @@
   /**
    * The message box every conversation shares: `/` at the start offers the session's slash commands, a pasted image
    * or a long paste becomes a chip right where it was dropped — one message can interleave text and attachments, in
-   * order. Enter sends, shift+enter breaks the line. What he typed and did not send survives a reload, pictures too.
+   * order. `@` offers the records `mention` finds (people, pages, chats); the one picked goes in as its pill and is
+   * sent as a reference, `[Name](urn)`. Enter sends, shift+enter breaks the line. What he typed and did not send survives a reload, pictures too.
    */
   let {
     placeholder,
@@ -49,6 +56,8 @@
     onstop,
     alert = "",
     ringMenu,
+    mention,
+    resolve,
   }: {
     placeholder: string;
     /** What is in the box, on every change. */
@@ -73,7 +82,14 @@
     alert?: string;
     /** The context ring as a button: pointed at, it turns into one; a click opens these rows. */
     ringMenu?: RingMenu;
+    /** What `@` offers: none, and `@` is only an at. */
+    mention?: MentionSource;
+    /** A picked reference's current look (icon, name), for its pill. */
+    resolve?: RefResolver;
   } = $props();
+
+  /** An `@` at a word's start, and what follows it up to the caret. */
+  const MENTION = /(?:^|[\s([{"'])@([^\s@][^@\n]{0,40})?$/;
 
   const FAMILIES = ["fable", "opus", "sonnet", "haiku"] as const;
   const EFFORTS: readonly Effort[] = ["low", "medium", "high", "xhigh", "max"];
@@ -94,7 +110,7 @@
     readonly preview: string;
     readonly size?: number;
   }
-  type Chip = { kind: "image" | "file"; attachment: Attachment } | { kind: "text"; text: string };
+  type Chip = { kind: "image" | "file"; attachment: Attachment } | { kind: "text"; text: string } | { kind: "ref"; ref: Ref };
 
   let input = $state<HTMLDivElement>();
   let picker = $state<HTMLInputElement>();
@@ -103,6 +119,11 @@
   let shownPlaceholder = $state<string | undefined>();
   let suggestions = $state<{ label: string; hint?: string; insert: string }[]>([]);
   let active = $state(0);
+  /** The `@` menu while one is open: what was typed after the `@`, and what answers to it. */
+  let mentionQuery = $state<string | null>(null);
+  let mentionItems = $state<readonly MentionItem[]>([]);
+  let mentionLit = $state(0);
+  let mentionLoading = $state(false);
   let modelButton = $state<HTMLButtonElement>();
   let effortButton = $state<HTMLButtonElement>();
   let prefsShown = $state<Prefs | undefined>();
@@ -178,6 +199,12 @@
   };
 
   function chipNode(chip: Chip) {
+    if (chip.kind === "ref") {
+      const made = refChip(chip.ref, resolve?.(chip.ref.urn), true);
+      made.el.classList.add("inline-chip", "ref-chip");
+      chips.set(made.el, chip);
+      return made.el;
+    }
     const body =
       chip.kind === "text"
         ? [iconNode("file", 11), el("span", {}, `Pasted text · ${chip.text.length.toLocaleString()} chars`)]
@@ -255,7 +282,57 @@
     suggestions = [];
     menuNode = undefined;
     menuStart = -1;
+    mentionQuery = null;
   };
+
+  $effect(() => {
+    const query = mentionQuery;
+    if (query === null || !mention) return;
+    let live = true;
+    mentionLoading = true;
+    Promise.resolve(mention(query)).then(
+      (found) => {
+        if (!live) return;
+        mentionItems = found;
+        mentionLit = 0;
+        mentionLoading = false;
+        // A space after a word nothing answers to means the `@` was just an at.
+        if (!found.length && /\s$/.test(query)) closeMenu();
+      },
+      () => {
+        if (live) mentionLoading = false;
+      },
+    );
+    return () => {
+      live = false;
+    };
+  });
+
+  /** The `@query` before the caret becomes the picked record's pill, with a space after it to type on. */
+  function pickMention(item: MentionItem | undefined) {
+    const node = menuNode;
+    const start = menuStart;
+    closeMenu();
+    if (!item || !node?.isConnected || start < 0) return;
+    const caret = selectionRange();
+    const end = caret?.collapsed && caret.startContainer === node ? caret.startOffset : node.length;
+    const range = document.createRange();
+    range.setStart(node, start);
+    range.setEnd(node, end);
+    range.deleteContents();
+    const spacer = document.createTextNode(" ");
+    range.insertNode(spacer);
+    range.insertNode(chipNode({ kind: "ref", ref: { urn: item.urn, label: item.label } }));
+    const after = document.createRange();
+    after.setStart(spacer, 1);
+    after.collapse(true);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(after);
+    input?.focus();
+    settle();
+    keepDraft();
+  }
   function pick(item: { insert: string }) {
     const node = menuNode;
     if (!node?.isConnected) return closeMenu();
@@ -302,6 +379,15 @@
       menuStart = 0;
       return void showCommands(before.slice(1));
     }
+    const at = mention ? MENTION.exec(before) : null;
+    if (at) {
+      const query = at[1] ?? "";
+      menuNode = text;
+      menuStart = before.length - query.length - 1;
+      suggestions = [];
+      mentionQuery = query;
+      return;
+    }
     closeMenu();
   }
 
@@ -315,6 +401,7 @@
       const chip = node instanceof HTMLElement ? chips.get(node) : undefined;
       if (chip?.kind === "image" || chip?.kind === "file") return void images.push({ media_type: chip.attachment.media_type, data: chip.attachment.data, name: chip.attachment.name });
       if (chip?.kind === "text") return void (text += `\n<pasted_content>\n${chip.text}\n</pasted_content>\n`);
+      if (chip?.kind === "ref") return void (text += formatRef(chip.ref));
       node.childNodes.forEach(walk);
     };
     input?.childNodes.forEach(walk);
@@ -330,6 +417,7 @@
       const chip = node instanceof HTMLElement ? chips.get(node) : undefined;
       if (chip?.kind === "image" || chip?.kind === "file") return void out.push({ kind: "image", ...chip.attachment });
       if (chip?.kind === "text") return void out.push({ kind: "paste", text: chip.text });
+      if (chip?.kind === "ref") return void out.push({ kind: "ref", ...chip.ref });
       node.childNodes.forEach(walk);
     };
     input?.childNodes.forEach(walk);
@@ -365,6 +453,7 @@
       for (const part of stored) {
         if (part.kind === "image") box.append(chipNode({ kind: part.preview ? "image" : "file", attachment: { media_type: part.media_type, data: part.data, preview: part.preview, name: part.name, size: part.size } }));
         else if (part.kind === "paste") box.append(chipNode({ kind: "text", text: part.text }));
+        else if (part.kind === "ref") box.append(chipNode({ kind: "ref", ref: { urn: part.urn, label: part.label } }));
         else
           for (const [i, line] of part.text.split("\n").entries()) {
             if (i) box.append(document.createElement("br"));
@@ -428,6 +517,22 @@
   }
 
   function keydown(event: KeyboardEvent) {
+    if (mentionQuery !== null) {
+      const key = menuKey(event);
+      if (key === "ArrowDown" || key === "ArrowUp") {
+        event.preventDefault();
+        if (mentionItems.length) mentionLit = (mentionLit + (key === "ArrowDown" ? 1 : mentionItems.length - 1)) % mentionItems.length;
+        return;
+      }
+      if ((key === "Enter" || key === "Tab") && mentionItems.length) {
+        event.preventDefault();
+        return pickMention(mentionItems[mentionLit]);
+      }
+      if (key === "Escape") {
+        event.preventDefault();
+        return closeMenu();
+      }
+    }
     if (suggestions.length) {
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault();
@@ -477,6 +582,11 @@
     <div class="compose-pin">
       <span class="ellipsis quote-pin"><Icon name={pin.icon} size={10} />{#if pin.from}<b>{pin.from}</b>:{/if} {pin.text}</span>
       <button class="iconbtn slim" title="not answering this (esc)" aria-label="Dismiss" onclick={dismissPin}><Icon name="x" size={11} /></button>
+    </div>
+  {/if}
+  {#if mentionQuery !== null}
+    <div class="compose-mention-menu">
+      <ItemList items={mentionItems} bind:selected={mentionLit} onpick={pickMention} loading={mentionLoading} dense empty={mentionQuery ? "Nothing by that name" : "Type a name"} />
     </div>
   {/if}
   {#if suggestions.length}
@@ -534,4 +644,7 @@
   .vim-caret { position: absolute; border-radius: 2px; background: var(--ink-30); pointer-events: none; }
   .vim-badge { display: none; position: absolute; top: 0; right: 0; padding: 1px 5px; border-radius: 4px; background: var(--code-bg); color: var(--ink-45); font: 600 10px/1.4 var(--mono); letter-spacing: 0.04em; pointer-events: none; }
   .input:focus ~ .vim-badge { display: block; }
+  .compose { position: relative; }
+  .compose-mention-menu { position: absolute; bottom: 100%; left: 0; z-index: 30; width: min(340px, 100%); max-height: min(20rem, 50dvh); margin-bottom: 6px; padding: 4px; overflow-y: auto; border-radius: var(--r, 10px); background: var(--surface); box-shadow: var(--float-shadow); color: var(--ink); font-size: var(--ui); text-align: left; }
+  .input :global(.ref-chip) { vertical-align: baseline; user-select: none; }
 </style>

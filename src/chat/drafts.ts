@@ -5,9 +5,10 @@
  * drafts go rather than the write failing: a draft is worth keeping, never worth an error.
  */
 
-/** One piece of the box: a run of text, a pasted chunk, or an image. */
+/** One piece of the box: a run of text, a pasted chunk, a reference picked with `@`, or an image. */
 export type DraftPart =
   | { readonly kind: "text"; readonly text: string }
+  | { readonly kind: "ref"; readonly urn: string; readonly label: string }
   | { readonly kind: "paste"; readonly text: string }
   | {
       readonly kind: "image";
@@ -49,7 +50,7 @@ const done = <T>(request: IDBRequest<T>) =>
     request.onerror = () => resolve(undefined);
   });
 
-const size = (d: Draft) => d.parts.reduce((n, p) => n + (p.kind === "image" ? p.data.length : p.text.length), 0);
+const size = (d: Draft) => d.parts.reduce((n, p) => n + (p.kind === "image" ? p.data.length : p.kind === "ref" ? p.urn.length + p.label.length : p.text.length), 0);
 
 export async function saveDraft(key: string, parts: readonly DraftPart[]) {
   const db = await open();
