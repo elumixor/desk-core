@@ -19,7 +19,7 @@
 </script>
 
 <script lang="ts">
-  import type { Snippet } from "svelte";
+  import { type Snippet, untrack } from "svelte";
   import { chip as refChip } from "../mention/chip";
   import "../mention/refs.css";
   import type { MentionItem, MentionSource, RefResolver } from "../mention/types";
@@ -143,15 +143,19 @@
     const box = input;
     if (!box || !chatHost().vim() || TOUCH) return;
     const layer = attachVim(box, {
-      onmode: (mode) => {
-        vimMode = mode;
-        if (mode !== "insert") closeMenu();
-      },
-      oncaret: (caret) => (vimCaret = caret),
-      onchange: () => {
-        closeMenu();
-        keepDraft();
-      },
+      // The layer reports from DOM events, and a blur can fire while Svelte removes the box inside a block
+      // effect (its chat swapped or faded out): written untracked, those writes are not mutations of the block.
+      onmode: (mode) =>
+        untrack(() => {
+          vimMode = mode;
+          if (mode !== "insert") closeMenu();
+        }),
+      oncaret: (caret) => untrack(() => (vimCaret = caret)),
+      onchange: () =>
+        untrack(() => {
+          closeMenu();
+          keepDraft();
+        }),
       cloneChip: (chip) => chipNode(chips.get(chip)!),
     });
     vimLayer = layer;
