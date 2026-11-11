@@ -50,6 +50,14 @@
     const remaining = w.resetsAt ? new Date(w.resetsAt).getTime() - Date.now() : 0;
     return remaining > 0 && remaining <= WEEK_MS && w.percent > ((WEEK_MS - remaining) / WEEK_MS) * 100;
   }
+  /** A window's tooltip: percent and when it resets ("14:20, in 1.4h"), or that none runs until the next use starts one. */
+  function said(label: string, w: UsageWindow) {
+    if (!w.resetsAt) return `${label}: no active window, ${w.percent}% used · starts with the next use`;
+    const at = new Date(w.resetsAt);
+    const day = at.toDateString() === new Date().toDateString() ? "" : `${at.toLocaleDateString([], { weekday: "short" })} `;
+    const until = left(w.resetsAt);
+    return `${label}: ${w.percent}% used · resets ${day}${at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}${until ? `, in ${until}` : ""}`;
+  }
   const level = (percent: number, warm = 70) => (percent >= 90 ? "hot" : percent >= warm ? "warm" : "cool");
 
   const discs = $derived.by(() => {
@@ -61,8 +69,8 @@
     const ahead = week ? aheadOfPace(week) : false;
     return [
       ...(session ? [{ key: "context", percent: context, level: "context", time: "", title: context === undefined ? "Context: not known yet" : `Context: ${context}% full` }] : []),
-      { key: "session", percent: s?.percent, level: s ? level(s.percent) : "none", time: s && s.percent > SESSION_TIME_AT ? left(s.resetsAt) : "", title: s ? `${s.name}: ${s.percent}% used · resets in ${left(s.resetsAt)}` : `Session: unavailable — ${why}` },
-      { key: "week", percent: week?.percent, level: week ? (ahead && week.percent < 90 ? "warm" : level(week.percent, 101)) : "none", time: ahead && week!.percent >= WEEK_TIME_AT ? left(week!.resetsAt) : "", title: week ? `${week.name}: ${week.percent}% used · resets in ${left(week.resetsAt)}` : `Weekly: unavailable — ${why}` },
+      { key: "session", percent: s?.percent, level: s ? level(s.percent) : "none", time: s && s.percent > SESSION_TIME_AT ? left(s.resetsAt) : "", title: s ? said("5h", s) : `5h: no data — ${why}` },
+      { key: "week", percent: week?.percent, level: week ? (ahead && week.percent < 90 ? "warm" : level(week.percent, 101)) : "none", time: ahead && week!.percent >= WEEK_TIME_AT ? left(week!.resetsAt) : "", title: week ? said(week.name === "Weekly" ? "Week" : `Week (${week.name})`, week) : `Week: no data — ${why}` },
     ];
   });
 </script>
