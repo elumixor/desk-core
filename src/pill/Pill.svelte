@@ -200,14 +200,19 @@
     stroke-width: 9;
   }
 
+  /* Both give way when the pill is clipped, each by its length, so a long title still shows most of itself. */
   .title {
-    min-width: 0;
+    flex: 0 1 auto;
+    min-width: 2em;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .meta {
-    flex: none;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-weight: 400;
     opacity: 0.6;
   }
