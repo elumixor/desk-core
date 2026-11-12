@@ -14,6 +14,8 @@ What every desk app shares in the browser, as TypeScript source (no build step; 
 - `@desk/core/palette` — `<CommandPalette>`, the suite's ⌘K, and `<ItemList>`, the grouped rows it and every menu draw.
 - `@desk/core/mention` — `<MentionField>`, text that edits in place where `@` points at a record, and `<RefText>`, the same
   text read-only with its references as pills.
+- `@desk/core/pill` — `<Pill urn>`, a record named in text drawn the same in every app, and the kind registry
+  (`registerPillKind`) that tells it what each URN is; `balanceKind` for Balance calendar blocks.
 - `@desk/core/inbox` — `<InboxList>`, what an app tells its person about: rows under headings, unread ones marked,
   "Mark all read" and optional filters.
 - `@desk/core/settings` — `<SettingsDialog>`, the suite's settings (Svelte 5): ⌘⇧, opens it, a searchable rail of
@@ -82,6 +84,43 @@ A reference is a Markdown link to a URN, `[Groceries](money:category/12)`, so te
 `source` answers what `@query` should offer (`MentionItem`s: list rows with a `urn`); `resolve(urn)` gives a pill its
 current name, icon and `href`, falling back to the label the text holds. The field saves on blur or Enter (`multiline`
 keeps Enter for lines), Escape puts it back; in the menu Up / Down or Ctrl+J / Ctrl+K move, Enter or Tab picks.
+
+## Pills
+
+A pill is a record named in text: a round wash of the text colour, the record's mark (with a link arrow when it lives
+in another app), its title clipped to fit, muted meta and a status circle. What it shows comes from the kind registered
+for its URN, so adding a kind is one call and no change to the component:
+
+```ts
+import { balanceKind, registerPillKind } from "@desk/core/pill";
+
+registerPillKind({
+  name: "git:commit",
+  pattern: /^git:\S+@[0-9a-f]{7,40}$/,
+  icon: GitCommitHorizontal,
+  external: true,
+  resolve: async (urn) => ({ title: "Fix login", meta: "pai", href: "https://github.com/…" }),
+});
+registerPillKind(balanceKind((id) => api.balanceBlock(id)));
+```
+
+```svelte
+<Pill urn="balance:block/7k6g0oetko6g28n8g6iu5vndks" label="Exam" />
+```
+
+A kind has a `pattern` (tested against the whole reference), `resolve(urn)` (a `PillLook`: `title`, `meta`, `color`,
+`status`, `icon`, `href`, `hint`, `done`; `null` = not found), `icon` and `tint`, `external`, and what a press does:
+`href` or `open`. `attach(urn, look)` adds behaviour once resolved (a hover preview, what a copy gives). A sync
+resolver is read reactively; an async one is asked once a minute per URN across the page (`fresh`). `label` is shown
+until the record answers; `text` instead keeps the reference as plain text until it is found. `mountPill(el, props)`
+puts one into plain DOM (an editor's node view, a pass over rendered text); `pillsIn(text)` finds what the registered
+kinds claim.
+
+`balanceKind(read)` is `balance:block/<id>`: the block's title, its time (`blockTime`: "Fri 20 Nov · 11:30–12:15"),
+its sphere's colour on a calendar mark; a press opens it in Balance. Balance sits behind its own sign-in, so `read` is
+the app's server asking Balance's MCP `get_event` with a Balance MCP key.
+
+Restyle with `--pill-max` (the widest a pill gets) and `--pill-halo` (the ring behind the link arrow; `--surface`).
 
 ## Inbox
 
