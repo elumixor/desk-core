@@ -8,7 +8,7 @@
    * link arrow when it lives in another app), its title clipped to fit, muted meta, and its status circle. Everything
    * it knows comes from the kind registered for `urn` (`registerPillKind`), so a new kind needs no change here.
    *
-   * `label` is the title shown until the record answers (the text's own label); `text` instead keeps the reference as
+   * `label` is the title shown until the record answers, and when its look has none (the text's own label); `text` instead keeps the reference as
    * that plain text until it is found, and for good if it is not; `look` skips the lookup.
    */
   let {
@@ -34,9 +34,11 @@
   const plain = $derived(text !== undefined && !look);
   const shown = $derived(look ?? { title: label || urn });
   const href = $derived(look ? (look.href ?? kind?.href?.(urn, look)) : undefined);
+  const external = $derived(shown.external ?? kind?.external ?? false);
+  const title = $derived(shown.title || label || "Untitled");
   const icon = $derived(shown.icon ?? kind?.icon);
   const color = $derived(shown.color ?? kind?.tint);
-  const hint = $derived(look === null ? `Not found: ${urn}` : (shown.hint ?? [shown.title, shown.meta].filter(Boolean).join(" · ")));
+  const hint = $derived(look === null ? `Not found: ${urn}` : (shown.hint ?? [title, shown.meta].filter(Boolean).join(" · ")));
   const status = $derived(shown.status && { shape: statusShape(shown.status.name), ink: statusInk(shown.status.color), name: shown.status.name });
   const attachment = $derived((look && kind?.attach?.(urn, look)) || undefined);
   const image = (value: string) => /^(https?:|data:|\/|\.)/.test(value);
@@ -49,7 +51,7 @@
       kind.open(urn, look, event);
     } else if (href) {
       event.preventDefault();
-      if (kind?.external) window.open(href, "_blank", "noopener");
+      if (external) window.open(href, "_blank", "noopener");
       else window.location.assign(href);
     }
   }
@@ -63,8 +65,8 @@
     class:missing={look === null}
     class:done={shown.done}
     href={href}
-    target={href && kind?.external ? "_blank" : undefined}
-    rel={href && kind?.external ? "noopener" : undefined}
+    target={href && external ? "_blank" : undefined}
+    rel={href && external ? "noopener" : undefined}
     title={hint}
     data-urn={urn}
     data-kind={kind?.name}
@@ -72,7 +74,7 @@
     onclick={press}
     {@attach attachment}
   >
-    {#if icon || color || kind?.external}
+    {#if icon || color || external}
       <span class="mark" style:color={color}>
         {#if typeof icon === "string"}
           {#if image(icon)}<img src={icon} alt="" />{:else}<span class="emoji">{icon}</span>{/if}
@@ -81,7 +83,7 @@
           <Icon size="1.1em" />
         {:else if color}<span class="dot"></span>
         {/if}
-        {#if kind?.external}
+        {#if external}
           <span class="arrow" aria-hidden="true">
             <svg class="halo" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10" /></svg>
             <svg viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10" /></svg>
@@ -89,7 +91,7 @@
         {/if}
       </span>
     {/if}
-    <span class="title">{shown.title || "Untitled"}</span>
+    <span class="title">{title}</span>
     {#if shown.meta}<span class="meta">{shown.meta}</span>{/if}
     {#if status}
       <svg class="status" viewBox="0 0 16 16" style:color={status.ink} role="img" aria-label={status.name}>

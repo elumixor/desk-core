@@ -22,6 +22,10 @@ export interface PillLook {
   readonly hint?: string;
   /** Finished or cancelled: drawn faded. */
   readonly done?: boolean;
+  /** Lives in another app (arrow, new tab), when that differs per record; else the kind's `external`. */
+  readonly external?: boolean;
+  /** The record itself, for the kind's `open` and `attach`. */
+  readonly data?: unknown;
 }
 
 export type PillAnswer = PillLook | null | undefined;

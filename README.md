@@ -109,10 +109,11 @@ registerPillKind(balanceKind((id) => api.balanceBlock(id)));
 ```
 
 A kind has a `pattern` (tested against the whole reference), `resolve(urn)` (a `PillLook`: `title`, `meta`, `color`,
-`status`, `icon`, `href`, `hint`, `done`; `null` = not found), `icon` and `tint`, `external`, and what a press does:
+`status`, `icon`, `href`, `hint`, `done`, `external`, `data`: the record, for `open`/`attach`; `null` = not
+found), `icon` and `tint`, `external`, and what a press does:
 `href` or `open`. `attach(urn, look)` adds behaviour once resolved (a hover preview, what a copy gives). A sync
 resolver is read reactively; an async one is asked once a minute per URN across the page (`fresh`). `label` is shown
-until the record answers; `text` instead keeps the reference as plain text until it is found. `mountPill(el, props)`
+until the record answers, and when its look has no title; `text` instead keeps the reference as plain text until it is found. `mountPill(el, props)`
 puts one into plain DOM (an editor's node view, a pass over rendered text); `pillsIn(text)` finds what the registered
 kinds claim.
 
