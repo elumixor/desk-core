@@ -499,6 +499,7 @@
   /** Replaces what is in the box (a message taken back to rewrite). */
   export function fill(next: readonly DraftPart[]) {
     if (!input) return;
+    clearTimeout(saving);
     input.replaceChildren();
     put(input, next);
     settle();
@@ -516,6 +517,7 @@
     closeMenu();
     vimLayer?.load();
     empty = true;
+    clearTimeout(saving);
     if (storeKey) void clearDraft(storeKey);
     await submit(text, images);
   }
