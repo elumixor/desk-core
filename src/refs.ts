@@ -5,6 +5,8 @@
  * Text with references stays text: stored in any column, read by a model, pasted into Markdown.
  */
 
+import { linkTo, parseLink } from "./urn";
+
 export interface Ref {
   /** The link target as written: a desk https URL or a legacy URN. */
   readonly urn: string;
@@ -20,7 +22,11 @@ const REF =
 
 const escapeLabel = (label: string) => label.replace(/[[\]\n]/g, " ").trim();
 
-export const formatRef = ({ urn, label }: Ref) => `[${escapeLabel(label)}](${urn})`;
+/** Written with the record's https URL (`linkTo`); a kind with no page of its own keeps its URN. */
+export const formatRef = ({ urn, label }: Ref) => {
+  const target = parseLink(urn);
+  return `[${escapeLabel(label)}](${target && !target.id.includes("#") ? linkTo(target) : urn})`;
+};
 
 /** The text cut into plain runs and references, in order; adjacent plain text is one run. */
 export function parseRefs(text: string): RefSegment[] {

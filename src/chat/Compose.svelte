@@ -38,7 +38,7 @@
    * The message box every conversation shares: `/` at the start offers the session's slash commands, a pasted image
    * or a long paste becomes a chip right where it was dropped — one message can interleave text and attachments, in
    * order. `@` offers the records `mention` finds (people, pages, chats); the one picked goes in as its pill and is
-   * sent as a reference, `[Name](urn)`. Enter sends, shift+enter breaks the line. What he typed and did not send survives a reload, pictures too.
+   * sent as a reference, `[Name](https link)`. Enter sends, shift+enter breaks the line. What he typed and did not send survives a reload, pictures too.
    */
   let {
     placeholder,

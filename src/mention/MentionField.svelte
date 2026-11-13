@@ -9,7 +9,7 @@
 
   /**
    * Text that edits in place and can point at things: `@` opens a menu of the app's records (`source`), and the one
-   * picked goes in as a pill. Saved as plain text with Markdown-link references (`[Name](urn)`), on blur or Enter;
+   * picked goes in as a pill. Saved as plain text with Markdown-link references (`[Name](https link)`), on blur or Enter;
    * Escape puts it back. Up / Down or Ctrl+J / Ctrl+K move in the menu, Enter or Tab picks, Escape closes it.
    * `multiline` keeps Enter for new lines (Shift+Enter in one line is never a line).
    */
