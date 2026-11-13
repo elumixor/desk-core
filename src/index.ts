@@ -19,6 +19,7 @@ export {
 export { ago, brief, clock, day, sameMinute, stamp } from "./time";
 export {
   appUrl,
+  balanceBlockUrl,
   devSessionUrl,
   formatUrn,
   keepPageUrl,

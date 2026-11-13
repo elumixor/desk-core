@@ -1,7 +1,7 @@
 /**
  * Links between the suite's apps: one app points at another's record by its absolute https URL, never a URN.
  * `keepPageUrl` / `peoplePersonUrl` / … build them; `parseLink` reads one back to `{ app, kind, id }`, and still
- * reads a legacy `<app>:<kind>/<id>` URN (`keep:page/<id>`) so old text keeps resolving.
+ * reads a legacy `<app>:<kind>/<id>` URN (`keep:page/<id>`, `balance:block/<id>`) so old text keeps resolving.
  */
 
 import { DESK_DOMAIN } from "./sign-in";
@@ -30,6 +30,8 @@ export const peoplePersonUrl = (id: string) => `${appUrl("people")}/p/${encodeUR
 export const peopleGroupUrl = (id: string) => `${appUrl("people")}/g/${encodeURIComponent(id)}`;
 export const paiThreadUrl = (id: string) => `${appUrl("pai")}/#/thread/${encodeURIComponent(id)}`;
 export const devSessionUrl = (id: string) => `${appUrl("dev")}/?session=${encodeURIComponent(id)}`;
+/** A Balance calendar block by its Google event id; Balance also reads an optional `&at=<instant>`. */
+export const balanceBlockUrl = (id: string) => `${appUrl("balance")}/calendar?event=${encodeURIComponent(id)}`;
 
 const BUILDERS: Record<string, (id: string) => string> = {
   "keep:page": keepPageUrl,
@@ -37,6 +39,7 @@ const BUILDERS: Record<string, (id: string) => string> = {
   "people:group": peopleGroupUrl,
   "pai:thread": paiThreadUrl,
   "dev:session": devSessionUrl,
+  "balance:block": balanceBlockUrl,
 };
 
 /** The https link to a record; a kind with no page of its own stays a URN. */
@@ -59,6 +62,11 @@ export function parseLink(link: string): Urn | null {
   if (app === "dev") {
     const id = decode(url.searchParams.get("session") ?? undefined);
     return id && { ...id, kind: "session" };
+  }
+  if (app === "balance") {
+    const id =
+      url.pathname.replace(/\/$/, "") === "/calendar" ? decode(url.searchParams.get("event") ?? undefined) : null;
+    return id && { ...id, kind: "block" };
   }
   const [, short, raw] = /^\/([a-z]+)\/([^/]+)\/?$/.exec(url.pathname) ?? [];
   const kind = short && PATH_KINDS[app]?.[short];
