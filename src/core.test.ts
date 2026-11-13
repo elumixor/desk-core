@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { frontendApi } from "./clerk";
 import { isDeskUrl, onDeskDomain } from "./sign-in";
-import { parseUrn, peoplePerson } from "./urn";
 
 describe("sign-in", () => {
   test("returns only to https places in the suite", () => {
@@ -22,13 +21,6 @@ describe("sign-in", () => {
 describe("clerk", () => {
   test("reads the Frontend API off a publishable key, padded or not", () => {
     expect(frontendApi("pk_live_Y2xlcmsuZGVzay5hdG1hZ2FtaW5nLmNvbSQ")).toBe("clerk.desk.atmagaming.com");
-  });
-});
-
-describe("urn", () => {
-  test("parses and formats", () => {
-    expect(parseUrn(peoplePerson("42"))).toEqual({ app: "people", kind: "person", id: "42" });
-    expect(parseUrn("not a urn")).toBeNull();
   });
 });
 

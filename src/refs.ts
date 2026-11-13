@@ -1,10 +1,12 @@
 /**
- * References in plain text: `[Label](<urn>)`, a Markdown link whose target is a URN. The label is what the text said
+ * References in plain text: `[Label](<link>)`, a Markdown link to a desk record's https URL (`parseLink` reads it;
+ * a legacy `<app>:<kind>/<id>` URN still parses). The label is what the text said
  * when the reference was made, so it reads without the app; an app shows the record's current name when it knows it.
  * Text with references stays text: stored in any column, read by a model, pasted into Markdown.
  */
 
 export interface Ref {
+  /** The link target as written: a desk https URL or a legacy URN. */
   readonly urn: string;
   readonly label: string;
 }
@@ -13,7 +15,8 @@ export type RefSegment =
   | { readonly text: string; readonly ref?: undefined }
   | { readonly text?: undefined; readonly ref: Ref };
 
-const REF = /\[([^\]\n]*)\]\(([a-z][a-z0-9-]*:[a-z][a-z0-9-]*\/[^)\s]+)\)/g;
+const REF =
+  /\[([^\]\n]*)\]\((https:\/\/[a-z0-9-]+\.desk\.atmagaming\.com\/[^)\s]+|[a-z][a-z0-9-]*:[a-z][a-z0-9-]*\/[^)\s]+)\)/g;
 
 const escapeLabel = (label: string) => label.replace(/[[\]\n]/g, " ").trim();
 

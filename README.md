@@ -4,13 +4,13 @@ What every desk app shares in the browser, as TypeScript source (no build step; 
 
 - `startClerk(Clerk, publishableKey)` — Clerk loaded with its prebuilt components, which a production instance needs handed in.
 - `signInUrl(next)` / `signOutUrl(next)` / `isDeskUrl(url)` — the central sign-in on people (`https://people.desk.atmagaming.com/sign-in?next=`), for apps on `*.desk.atmagaming.com`.
-- `parseUrn` / `formatUrn` / `keepPage` / `peoplePerson` — `<app>:<kind>/<id>` names across the suite.
+- `keepPageUrl` / `peoplePersonUrl` / `peopleGroupUrl` / `paiThreadUrl` / `devSessionUrl` / `linkTo` build absolute https links between apps; `parseLink` reads one (or a legacy `<app>:<kind>/<id>` URN) back.
 - `@desk/core/tokens.css` — the suite's look as CSS custom properties, light and dark, with a Tailwind 4 `@theme` block over them.
 - `PALETTES` / `applyTheme(choice)` / `onSystemTheme(listener)` — the named palettes and choosing between them.
 - `menuKey(event)` / `latinKey(event)` / `isPaletteShortcut(event)` — list keys as every desk list reads them: Ctrl+J /
   Ctrl+K are Down / Up, on any keyboard layout.
 - `fuzzyMatch` / `fuzzyFilter` — finding things by name as the person types, with the characters that matched.
-- `formatRef` / `parseRefs` / `refsIn` / `plainText` — references in plain text: `[Label](<urn>)`.
+- `formatRef` / `parseRefs` / `refsIn` / `plainText` — references in plain text: `[Label](<link>)`.
 - `@desk/core/palette` — `<CommandPalette>`, the suite's ⌘K, and `<ItemList>`, the grouped rows it and every menu draw.
 - `@desk/core/mention` — `<MentionField>`, text that edits in place where `@` points at a record, and `<RefText>`, the same
   text read-only with its references as pills.
@@ -74,7 +74,7 @@ and adds what `search` returns. Up / Down or Ctrl+J / Ctrl+K move, Enter runs, E
 
 ## References and `@`
 
-A reference is a Markdown link to a URN, `[Groceries](money:category/12)`, so text that holds them stays text.
+A reference is a Markdown link to the record's https URL, `[Groceries](https://keep.desk.atmagaming.com/p/<id>)` (a legacy URN still parses), so text that holds them stays text.
 
 ```svelte
 <MentionField value={note} label="Note" source={(query) => filterItems(records, query, 8)} resolve={look} onsave={save} />
