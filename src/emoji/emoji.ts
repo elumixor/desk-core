@@ -35,15 +35,17 @@ let emojiList: Promise<readonly EmojiEntry[]> | null = null;
 let byShortcode = new Map<string, EmojiEntry>();
 
 export function loadEmoji(): Promise<readonly EmojiEntry[]> {
-  emojiList ??= Promise.all([
-    import("emojibase-data/en/data.json"),
-    import("emojibase-data/en/shortcodes/github.json"),
-  ]).then(([{ default: data }, { default: shortcodes }]) => {
-    const list = build(data, shortcodes);
-    byShortcode = new Map(list.flatMap((e) => e.shortcodes.map((code) => [code, e] as const)));
-    return list;
-  });
-  emojiList.catch(() => (emojiList = null));
+  emojiList ??= Promise.all([import("emojibase-data/en/data.json"), import("emojibase-data/en/shortcodes/github.json")])
+    .then(([{ default: data }, { default: shortcodes }]) => {
+      const list = build(data, shortcodes);
+      byShortcode = new Map(list.flatMap((e) => e.shortcodes.map((code) => [code, e] as const)));
+      return list;
+    })
+    .catch((error: unknown) => {
+      // A failed fetch (offline) is tried again on the next ask.
+      emojiList = null;
+      throw error;
+    });
   return emojiList;
 }
 
