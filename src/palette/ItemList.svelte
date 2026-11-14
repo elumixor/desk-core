@@ -49,7 +49,7 @@
         onclick={() => onpick(item)}
       >
         <span class="icon" style:color={item.tint}>
-          {#if typeof item.icon === "string"}<img src={item.icon} alt="" />{:else if Icon}<Icon size={dense ? 15 : 17} />{/if}
+          {#if item.glyph}<span class="glyph">{item.glyph}</span>{:else if typeof item.icon === "string"}<img src={item.icon} alt="" />{:else if Icon}<Icon size={dense ? 15 : 17} />{/if}
         </span>
         <span class="label"><Highlighted text={item.label} matches={item.matches} /></span>
         {#if item.hint}<span class="hint">{item.hint}</span>{/if}
@@ -115,6 +115,15 @@
     flex-shrink: 0;
     place-items: center;
     color: var(--ink-45);
+  }
+
+  .glyph {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .dense .glyph {
+    font-size: 16px;
   }
 
   .icon img {

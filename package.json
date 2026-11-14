@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs, references, the design tokens and themes, the settings dialog, the ⌘K palette, the @ mention field, the record pill, the inbox list and the trash.",
+  "description": "What every desk app shares in the browser: Clerk with its components, the central sign-in on people, URNs, references, the design tokens and themes, the settings dialog, the ⌘K palette, the @ mention field, the record pill, the inbox list, the trash and the emoji picker.",
   "exports": {
     ".": "./src/index.ts",
     "./settings": {
@@ -35,6 +35,10 @@
     "./pill": {
       "svelte": "./src/pill/index.ts",
       "default": "./src/pill/index.ts"
+    },
+    "./emoji": {
+      "svelte": "./src/emoji/index.ts",
+      "default": "./src/emoji/index.ts"
     }
   },
   "scripts": {
@@ -67,5 +71,9 @@
     "svelte": {
       "optional": true
     }
+  },
+  "dependencies": {
+    "emojibase": "18.0.0",
+    "emojibase-data": "18.0.0"
   }
 }

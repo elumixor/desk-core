@@ -11,6 +11,8 @@ export interface ListItem {
   readonly hint?: string;
   /** A Svelte component taking `size` and `class` (a lucide icon), or an image URL. */
   readonly icon?: unknown;
+  /** Text drawn in place of the icon: an emoji. */
+  readonly glyph?: string;
   /** A colour for the icon, any CSS colour. */
   readonly tint?: string;
   /** More words the row answers to, not drawn. */
