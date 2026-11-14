@@ -8,7 +8,7 @@
    * link arrow when it lives in another app), its title clipped to fit, muted meta, and its status circle. Everything
    * it knows comes from the kind registered for `urn` (`registerPillKind`), so a new kind needs no change here.
    *
-   * `label` is the title shown until the record answers, and when its look has none (the text's own label); `text` instead keeps the reference as
+   * `label` is the title it wears, whatever the record answers (a link's own text: `[Title](link)`); `text` instead keeps the reference as
    * that plain text until it is found, and for good if it is not; `look` skips the lookup.
    */
   let {
@@ -35,7 +35,7 @@
   const shown = $derived(look ?? { title: label || urn });
   const href = $derived(look ? (look.href ?? kind?.href?.(urn, look)) : undefined);
   const external = $derived(shown.external ?? kind?.external ?? false);
-  const title = $derived(shown.title || label || "Untitled");
+  const title = $derived(label || shown.title || "Untitled");
   const icon = $derived(shown.icon ?? kind?.icon);
   const color = $derived(shown.color ?? kind?.tint);
   const hint = $derived(look === null ? `Not found: ${urn}` : (shown.hint ?? [title, shown.meta].filter(Boolean).join(" · ")));
