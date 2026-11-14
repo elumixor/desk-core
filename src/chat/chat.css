@@ -342,6 +342,8 @@ button.row-file {
   font-weight: 500;
 }
 .tool-call-server {
+  flex: none;
+  white-space: nowrap;
   font-weight: 400;
   color: var(--ink-45);
 }

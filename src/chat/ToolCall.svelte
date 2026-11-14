@@ -35,7 +35,8 @@
 <div class="tool-call" class:live={!done} class:open class:loading>
   <button class="tool-call-head" aria-expanded={open} disabled={!done || (!preview && !(tool.id && session))} onclick={toggle}>
     <Icon name={label.icon} size={12} />
-    <span class="tool-call-what">{#if label.server}<span class="tool-call-server">{label.server}</span>{" "}{/if}{label.action}</span>
+    {#if label.server}<span class="tool-call-server">{label.server}</span>{/if}
+    <span class="tool-call-what">{label.action}</span>
     {#if argument}<span class="tool-call-arg">{argument}</span>{/if}
     <span class="tool-call-size">{done ? resultSize(preview) : "running"}</span>
   </button>
