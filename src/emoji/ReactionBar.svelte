@@ -8,9 +8,9 @@
   import EmojiPicker from "./EmojiPicker.svelte";
 
   /**
-   * Quick reactions in a row and a button for the rest, which opens the picker in the row's place (Escape there goes
-   * back to the row). A press gives `onpick` the emoji; `mine` are the ones the person has put there already, lit, so
-   * the host can take one off on a second press. Bare, for a host's menu or floating surface.
+   * Quick reactions in a row and a button for the rest, which opens the picker in the row's place (a pick or Escape
+   * there goes back to the row). A press gives `onpick` the emoji; `mine` are the ones the person has put there
+   * already, lit, so the host can take one off on a second press. Bare, for a host's menu or floating surface.
    */
   let {
     onpick,
@@ -19,10 +19,15 @@
   }: { onpick: (emoji: string) => void; mine?: readonly string[]; quick?: readonly string[] } = $props();
 
   let picking = $state(false);
+
+  function picked(emoji: string) {
+    picking = false;
+    onpick(emoji);
+  }
 </script>
 
 {#if picking}
-  <div class="reaction-picker"><EmojiPicker {onpick} onclose={() => (picking = false)} /></div>
+  <div class="reaction-picker"><EmojiPicker onpick={picked} onclose={() => (picking = false)} /></div>
 {:else}
   <div class="reaction-bar" role="toolbar" aria-label="React">
     {#each quick as emoji (emoji)}
