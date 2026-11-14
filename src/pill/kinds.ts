@@ -11,6 +11,8 @@ export interface PillLook {
   readonly title: string;
   /** Muted text after the title: a block's time, a commit's repo. */
   readonly meta?: string;
+  /** Draws the meta as a small pill of its own with this icon before it (a component taking `size`): a project in dev. */
+  readonly metaIcon?: unknown;
   /** The mark's colour: tints the icon, or is a dot when there is no icon (a Balance sphere). */
   readonly color?: string;
   readonly status?: PillStatus;

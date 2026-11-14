@@ -92,7 +92,10 @@
       </span>
     {/if}
     <span class="title">{title}</span>
-    {#if shown.meta}<span class="meta">{shown.meta}</span>{/if}
+    {#if shown.meta && "metaIcon" in shown && shown.metaIcon}
+      {@const MetaIcon = shown.metaIcon as Component<{ size?: number | string }>}
+      <span class="meta-pill"><MetaIcon size={11} />{shown.meta}</span>
+    {:else if shown.meta}<span class="meta">{shown.meta}</span>{/if}
     {#if status}
       <svg class="status" viewBox="0 0 16 16" style:color={status.ink} role="img" aria-label={status.name}>
         <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" />
@@ -215,6 +218,21 @@
     text-overflow: clip; animation: clip-fade linear both; animation-timeline: scroll(self inline);
     font-weight: 400;
     opacity: 0.6;
+  }
+
+  .meta-pill {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 3px;
+    height: 1.35em;
+    padding: 0 0.45em;
+    border-radius: 999px;
+    background: var(--ink-5);
+    color: var(--ink-70);
+    font-size: 0.8em;
+    font-weight: 500;
+    white-space: nowrap;
   }
 
   .status {
