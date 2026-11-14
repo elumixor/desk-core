@@ -125,7 +125,7 @@
     overflow: hidden;
     color: inherit;
     text-decoration: none;
-    text-overflow: ellipsis;
+    text-overflow: clip; animation: clip-fade linear both; animation-timeline: scroll(self inline);
     white-space: nowrap;
   }
   .restore {

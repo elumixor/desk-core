@@ -253,7 +253,7 @@
 
   .item span {
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip; animation: clip-fade linear both; animation-timeline: scroll(self inline);
     white-space: nowrap;
   }
 

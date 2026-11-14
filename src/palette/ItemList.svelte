@@ -137,7 +137,7 @@
     min-width: 0;
     overflow: hidden;
     font-weight: 500;
-    text-overflow: ellipsis;
+    text-overflow: clip; animation: clip-fade linear both; animation-timeline: scroll(self inline);
     white-space: nowrap;
   }
 
@@ -151,7 +151,7 @@
     overflow: hidden;
     color: var(--ink-30);
     font-size: 13px;
-    text-overflow: ellipsis;
+    text-overflow: clip; animation: clip-fade linear both; animation-timeline: scroll(self inline);
     white-space: nowrap;
   }
 

@@ -205,14 +205,14 @@
     flex: 0 1 auto;
     min-width: 2em;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip; animation: clip-fade linear both; animation-timeline: scroll(self inline);
   }
 
   .meta {
     flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip; animation: clip-fade linear both; animation-timeline: scroll(self inline);
     font-weight: 400;
     opacity: 0.6;
   }
