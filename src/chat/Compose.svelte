@@ -195,6 +195,20 @@
   export const setNote = (text: string) => (note = text);
   export const focus = () => input?.focus();
   export const refreshPrefs = () => (prefsShown = prefs?.());
+
+  /** An alias (`opus`, `opus[1m]`) reads as the model it stands for, "Opus 5.5"; a full id as itself. */
+  let aliasNames = $state<Readonly<Record<string, string>>>({});
+  const modelLabel = $derived.by(() => {
+    const model = prefsShown?.model;
+    if (!model) return "";
+    const alias = /^(fable|opus|sonnet|haiku)(\[1m\])?$/i.exec(model);
+    const name = alias && aliasNames[alias[1]!.toLowerCase()];
+    return name ? `${name}${alias[2] ? " 1M" : ""}` : capital(modelName(model));
+  });
+  $effect(() => {
+    if (!prefsShown?.model || Object.keys(aliasNames).length) return;
+    void models().then((list) => (aliasNames = Object.fromEntries(list.map((m) => [m.value, m.label]))));
+  });
   export function setPin(next: Pin | null) {
     pin = next;
     if (next) input?.focus();
@@ -719,7 +733,7 @@
     <div class="compose-foot">
       <button class="compose-tool" title="attach a file (or paste an image)" aria-label="Attach" onclick={() => picker?.click()}><Icon name="paperclip" size={15} /></button>
       <button class="compose-tool" class:on={picking} title="emoji (or type :name)" aria-label="Emoji" aria-expanded={picking} bind:this={emojiButton} onmousedown={(e) => !TOUCH && e.preventDefault()} onclick={togglePicker}><Icon name="smile" size={15} /></button>
-      {#if prefsShown?.model}<button class="compose-tool model" title="the model this conversation runs with" bind:this={modelButton} disabled={!setPrefs} onclick={openModels}>{capital(modelName(prefsShown.model))}</button>{/if}
+      {#if prefsShown?.model}<button class="compose-tool model" title="the model this conversation runs with" bind:this={modelButton} disabled={!setPrefs} onclick={openModels}>{modelLabel}</button>{/if}
       {#if prefsShown?.effort}<button class="compose-tool effort" title="how hard it thinks" bind:this={effortButton} disabled={!setPrefs} onclick={openEfforts}>{prefsShown.effort}</button>{/if}
       {@render extra?.()}
       <Rings model={prefsShown?.model} session={session?.()} menu={ringMenu} />
