@@ -20,6 +20,8 @@ What every desk app shares in the browser, as TypeScript source (no build step; 
   "Mark all read" and optional filters.
 - `@desk/core/settings` — `<SettingsDialog>`, the suite's settings (Svelte 5): ⌘⇧, opens it, a searchable rail of
   sections on the left, every section in one scroll on the right.
+- `@desk/core/emoji` — `<EmojiPicker>`, `<ReactionBar>` and what a `:` menu needs (`emojiItems`, `shortcodeEmoji`).
+  The chat composer uses them: `:sm` offers emoji, `:smile:` turns into 😄, the smiley in its foot opens the picker.
 
 ## Run it locally
 
@@ -136,6 +138,19 @@ The app keeps the notifications and what opening one does; the list draws them t
 `groups` are `{key, title?, items}`; an item is `{id, title, text?, meta?, unread, quiet?}` (quiet rows are drawn dimmer:
 kept for the record, nothing to act on). `lead` draws a row's avatar or icon, `heading` a group's icon, `aside` something
 at a row's end.
+
+## Emoji
+
+```svelte
+<EmojiPicker onpick={(emoji) => insert(emoji)} onclose={close} />
+<ReactionBar mine={["👍"]} onpick={(emoji) => toggle(message, emoji)} />
+```
+
+The picker shows the ones used lately, then every emoji by category, or the matches for its search (shortcode, name,
+tag), in the skin tone chosen there; it fills its host's width and `--emoji-picker-height` tall, on the host's
+`--surface`. The reaction bar is 👍 ❤️ 😂 👀 ✅ 🙏 (`QUICK_REACTIONS`, or `quick`) and a button that opens the picker in
+its place; `mine` are lit. The data is Emojibase's English set with GitHub's shortcodes, fetched on first use
+(`loadEmoji`) as its own chunk and cut to what the device draws; recent and tone are kept per device.
 
 ## Design tokens
 

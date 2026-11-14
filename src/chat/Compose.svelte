@@ -20,6 +20,10 @@
 
 <script lang="ts">
   import { type Snippet, untrack } from "svelte";
+  import { loadEmoji, shortcodeEmoji } from "../emoji/emoji";
+  import EmojiPicker from "../emoji/EmojiPicker.svelte";
+  import { type EmojiItem, emojiItems } from "../emoji/menu";
+  import { emojiTone, rememberEmoji } from "../emoji/used";
   import { chip as refChip } from "../mention/chip";
   import "../mention/refs.css";
   import type { MentionItem, MentionSource, RefResolver } from "../mention/types";
@@ -38,7 +42,9 @@
    * The message box every conversation shares: `/` at the start offers the session's slash commands, a pasted image
    * or a long paste becomes a chip right where it was dropped — one message can interleave text and attachments, in
    * order. `@` offers the records `mention` finds (people, pages, chats); the one picked goes in as its pill and is
-   * sent as a reference, `[Name](https link)`. Enter sends, shift+enter breaks the line. What he typed and did not send survives a reload, pictures too.
+   * sent as a reference, `[Name](https link)`. `:` and two letters offer emoji by shortcode, and a known code closed
+   * by its colon (`:smile:`) turns into its emoji; the smiley in the foot opens the picker. Enter sends, shift+enter
+   * breaks the line. What he typed and did not send survives a reload, pictures too.
    */
   let {
     placeholder,
@@ -90,6 +96,10 @@
 
   /** An `@` at a word's start, and what follows it up to the caret. */
   const MENTION = /(?:^|[\s([{"'])@([^\s@][^@\n]{0,40})?$/;
+  /** A `:` at a word's start, and the shortcode typed after it up to the caret. */
+  const SHORTCODE = /(?:^|[\s([{"']):([\w+-]{0,40})$/;
+  /** A shortcode closed by its second colon right before the caret. */
+  const CLOSED = /(?:^|[\s([{"']):([\w+-]{1,40}):$/;
 
   const FAMILIES = ["fable", "opus", "sonnet", "haiku"] as const;
   const EFFORTS: readonly Effort[] = ["low", "medium", "high", "xhigh", "max"];
@@ -119,11 +129,16 @@
   let shownPlaceholder = $state<string | undefined>();
   let suggestions = $state<{ label: string; hint?: string; insert: string }[]>([]);
   let active = $state(0);
-  /** The `@` menu while one is open: what was typed after the `@`, and what answers to it. */
-  let mentionQuery = $state<string | null>(null);
-  let mentionItems = $state<readonly MentionItem[]>([]);
-  let mentionLit = $state(0);
-  let mentionLoading = $state(false);
+  /** The `@` or `:` menu while one is open: what was typed after it, and what answers to it. */
+  let lookup = $state<{ kind: "mention" | "emoji"; query: string } | null>(null);
+  let found = $state<readonly (MentionItem | EmojiItem)[]>([]);
+  let foundLit = $state(0);
+  let finding = $state(false);
+  /** The emoji picker is open; it puts its pick where the caret was. */
+  let picking = $state(false);
+  let pickerCaret: Range | undefined;
+  let emojiButton = $state<HTMLButtonElement>();
+  let emojiBox = $state<HTMLDivElement>();
   let modelButton = $state<HTMLButtonElement>();
   let effortButton = $state<HTMLButtonElement>();
   let prefsShown = $state<Prefs | undefined>();
@@ -286,31 +301,74 @@
     suggestions = [];
     menuNode = undefined;
     menuStart = -1;
-    mentionQuery = null;
+    lookup = null;
+    found = [];
   };
 
   $effect(() => {
-    const query = mentionQuery;
-    if (query === null || !mention) return;
+    const current = lookup;
+    const source = current?.kind === "emoji" ? emojiItems : mention;
+    if (!current || !source) return;
     let live = true;
-    mentionLoading = true;
-    Promise.resolve(mention(query)).then(
-      (found) => {
+    finding = true;
+    Promise.resolve(source(current.query)).then(
+      (items) => {
         if (!live) return;
-        mentionItems = found;
-        mentionLit = 0;
-        mentionLoading = false;
-        // A space after a word nothing answers to means the `@` was just an at.
-        if (!found.length && /\s$/.test(query)) closeMenu();
+        found = items;
+        foundLit = 0;
+        finding = false;
+        // A shortcode nothing answers to is just text; so is an `@` when a space follows a word nothing answers to.
+        if (!items.length && (current.kind === "emoji" || /\s$/.test(current.query))) closeMenu();
       },
       () => {
-        if (live) mentionLoading = false;
+        if (live) finding = false;
       },
     );
     return () => {
       live = false;
     };
   });
+
+  function pickFound(item: MentionItem | EmojiItem | undefined) {
+    if (!item) return closeMenu();
+    if ("urn" in item) pickMention(item);
+    else pickEmoji(item.glyph);
+  }
+
+  /** The `:query` before the caret becomes the emoji, with a space after it to type on. */
+  function pickEmoji(emoji: string) {
+    rememberEmoji(emoji);
+    pick({ insert: `${emoji} ` });
+  }
+
+  function togglePicker() {
+    if (picking) return closePicker();
+    pickerCaret = selectionRange();
+    closeMenu();
+    picking = true;
+  }
+  /** The caret back where it was when the picker opened (the end of the box if that is gone). */
+  function restoreCaret() {
+    const range = pickerCaret;
+    pickerCaret = undefined;
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range && input?.contains(range.startContainer) ? range : endRange());
+    input?.focus();
+  }
+  function closePicker() {
+    picking = false;
+    restoreCaret();
+  }
+  function pickedEmoji(emoji: string) {
+    closePicker();
+    insertText(emoji);
+  }
+  /** A press outside the picker (and its button) shuts it. */
+  function pressedOutside(event: PointerEvent) {
+    const target = event.target as Node;
+    if (picking && !emojiBox?.contains(target) && !emojiButton?.contains(target)) picking = false;
+  }
 
   /** The `@query` before the caret becomes the picked record's pill, with a space after it to type on. */
   function pickMention(item: MentionItem | undefined) {
@@ -352,6 +410,7 @@
     const sel = window.getSelection();
     sel?.removeAllRanges();
     sel?.addRange(range);
+    keepDraft();
   }
   // The commands are the process's own: skills, plugins, and Claude Code's built-ins that make sense off a terminal.
   async function showCommands(query: string) {
@@ -383,16 +442,31 @@
       menuStart = 0;
       return void showCommands(before.slice(1));
     }
-    const at = mention ? MENTION.exec(before) : null;
-    if (at) {
-      const query = at[1] ?? "";
+    const code = CLOSED.exec(before)?.[1];
+    const emoji = code && shortcodeEmoji(code.toLowerCase(), emojiTone());
+    if (code && emoji) {
       menuNode = text;
-      menuStart = before.length - query.length - 1;
-      suggestions = [];
-      mentionQuery = query;
-      return;
+      menuStart = before.length - code.length - 2;
+      rememberEmoji(emoji);
+      return pick({ insert: emoji });
     }
+    const colon = SHORTCODE.exec(before);
+    // The emoji load as soon as a `:` starts a word, so the colon that closes a code finds its emoji.
+    if (colon) void loadEmoji().catch(() => undefined);
+    const shortcode = colon?.[1] ?? "";
+    if (shortcode.length >= 2) return openLookup("emoji", shortcode, text, before.length - shortcode.length - 1);
+    const at = mention ? MENTION.exec(before) : null;
+    if (at) return openLookup("mention", at[1] ?? "", text, before.length - (at[1] ?? "").length - 1);
     closeMenu();
+  }
+
+  /** The `@` or `:` menu for what follows the sign at `start` in `node`; rows of the other menu never linger in it. */
+  function openLookup(kind: "mention" | "emoji", query: string, node: Text, start: number) {
+    if (lookup?.kind !== kind) found = [];
+    menuNode = node;
+    menuStart = start;
+    suggestions = [];
+    lookup = { kind, query };
   }
 
   /** What is in the box: the text with its pasted chunks in place, and the attachments. */
@@ -523,16 +597,16 @@
   }
 
   function keydown(event: KeyboardEvent) {
-    if (mentionQuery !== null) {
+    if (lookup) {
       const key = menuKey(event);
       if (key === "ArrowDown" || key === "ArrowUp") {
         event.preventDefault();
-        if (mentionItems.length) mentionLit = (mentionLit + (key === "ArrowDown" ? 1 : mentionItems.length - 1)) % mentionItems.length;
+        if (found.length) foundLit = (foundLit + (key === "ArrowDown" ? 1 : found.length - 1)) % found.length;
         return;
       }
-      if ((key === "Enter" || key === "Tab") && mentionItems.length) {
+      if ((key === "Enter" || key === "Tab") && found.length) {
         event.preventDefault();
-        return pickMention(mentionItems[mentionLit]);
+        return pickFound(found[foundLit]);
       }
       if (key === "Escape") {
         event.preventDefault();
@@ -582,6 +656,8 @@
   }
 </script>
 
+<svelte:document onpointerdown={pressedOutside} />
+
 <footer class="compose {mono ? 'tui-compose' : 'chat-compose'}" class:dropping class:alerted={Boolean(alert)} ondragover={dragOver} ondragleave={() => (dropping = false)} ondrop={drop}>
   {#if alert}<span class="compose-alert" role="status">{alert}</span>{/if}
   {#if pin}
@@ -590,10 +666,13 @@
       <button class="iconbtn slim" title="not answering this (esc)" aria-label="Dismiss" onclick={dismissPin}><Icon name="x" size={11} /></button>
     </div>
   {/if}
-  {#if mentionQuery !== null}
+  {#if lookup}
     <div class="compose-mention-menu">
-      <ItemList items={mentionItems} bind:selected={mentionLit} onpick={pickMention} loading={mentionLoading} dense empty={mentionQuery ? "Nothing by that name" : "Type a name"} />
+      <ItemList items={found} bind:selected={foundLit} onpick={pickFound} loading={finding} dense empty={lookup.query ? "Nothing by that name" : "Type a name"} />
     </div>
+  {/if}
+  {#if picking}
+    <div class="compose-emoji" bind:this={emojiBox}><EmojiPicker onpick={pickedEmoji} onclose={closePicker} /></div>
   {/if}
   {#if suggestions.length}
     <div class="mentions">
@@ -633,6 +712,7 @@
   {:else}
     <div class="compose-foot">
       <button class="compose-tool" title="attach a file (or paste an image)" aria-label="Attach" onclick={() => picker?.click()}><Icon name="paperclip" size={15} /></button>
+      <button class="compose-tool" class:on={picking} title="emoji (or type :name)" aria-label="Emoji" aria-expanded={picking} bind:this={emojiButton} onmousedown={(e) => !TOUCH && e.preventDefault()} onclick={togglePicker}><Icon name="smile" size={15} /></button>
       {#if prefsShown?.model}<button class="compose-tool model" title="the model this conversation runs with" bind:this={modelButton} disabled={!setPrefs} onclick={openModels}>{capital(modelName(prefsShown.model))}</button>{/if}
       {#if prefsShown?.effort}<button class="compose-tool effort" title="how hard it thinks" bind:this={effortButton} disabled={!setPrefs} onclick={openEfforts}>{prefsShown.effort}</button>{/if}
       {@render extra?.()}
@@ -652,5 +732,6 @@
   .input:focus ~ .vim-badge { display: block; }
   .compose { position: relative; }
   .compose-mention-menu { position: absolute; bottom: 100%; left: 0; z-index: 30; width: min(340px, 100%); max-height: min(20rem, 50dvh); margin-bottom: 6px; padding: 4px; overflow-y: auto; border-radius: var(--r, 10px); background: var(--surface); box-shadow: var(--float-shadow); color: var(--ink); font-size: var(--ui); text-align: left; }
+  .compose-emoji { position: absolute; bottom: 100%; left: 0; z-index: 30; width: min(352px, 100%); margin-bottom: 6px; padding: 6px; border-radius: var(--r, 10px); background: var(--surface); box-shadow: var(--float-shadow); text-align: left; }
   .input :global(.ref-chip) { vertical-align: baseline; user-select: none; }
 </style>

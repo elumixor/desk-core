@@ -574,7 +574,8 @@ a.opt {
   cursor: pointer;
   opacity: 0.4;
 }
-.compose-tool:hover {
+.compose-tool:hover,
+.compose-tool.on {
   opacity: 0.8;
 }
 .compose-tool.model {
