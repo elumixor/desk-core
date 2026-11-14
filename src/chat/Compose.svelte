@@ -42,8 +42,9 @@
    * The message box every conversation shares: `/` at the start offers the session's slash commands, a pasted image
    * or a long paste becomes a chip right where it was dropped — one message can interleave text and attachments, in
    * order. `@` offers the records `mention` finds (people, pages, chats); the one picked goes in as its pill and is
-   * sent as a reference, `[Name](https link)`. `:` and two letters offer emoji by shortcode, and a known code closed
-   * by its colon (`:smile:`) turns into its emoji; the smiley in the foot opens the picker. Enter sends, shift+enter
+   * sent as a reference, `[Name](https link)`. A `:` at a word's start offers emoji at once (the recent and popular ones,
+   * then by shortcode as letters follow; Enter on a bare `:` still sends), and a known code closed by its colon
+   * (`:smile:`) turns into its emoji; the smiley in the foot opens the picker. Enter sends, shift+enter
    * breaks the line. What he typed and did not send survives a reload, pictures too.
    */
   let {
@@ -133,6 +134,8 @@
   let lookup = $state<{ kind: "mention" | "emoji"; query: string } | null>(null);
   let found = $state<readonly (MentionItem | EmojiItem)[]>([]);
   let foundLit = $state(0);
+  /** The arrows moved through the menu since it opened. */
+  let browsed = false;
   let finding = $state(false);
   /** The emoji picker is open; it puts its pick where the caret was. */
   let picking = $state(false);
@@ -453,8 +456,7 @@
     const colon = SHORTCODE.exec(before);
     // The emoji load as soon as a `:` starts a word, so the colon that closes a code finds its emoji.
     if (colon) void loadEmoji().catch(() => undefined);
-    const shortcode = colon?.[1] ?? "";
-    if (shortcode.length >= 2) return openLookup("emoji", shortcode, text, before.length - shortcode.length - 1);
+    if (colon) return openLookup("emoji", colon[1] ?? "", text, before.length - (colon[1] ?? "").length - 1);
     const at = mention ? MENTION.exec(before) : null;
     if (at) return openLookup("mention", at[1] ?? "", text, before.length - (at[1] ?? "").length - 1);
     closeMenu();
@@ -463,6 +465,7 @@
   /** The `@` or `:` menu for what follows the sign at `start` in `node`; rows of the other menu never linger in it. */
   function openLookup(kind: "mention" | "emoji", query: string, node: Text, start: number) {
     if (lookup?.kind !== kind) found = [];
+    if (!lookup) browsed = false;
     menuNode = node;
     menuStart = start;
     suggestions = [];
@@ -602,9 +605,12 @@
       if (key === "ArrowDown" || key === "ArrowUp") {
         event.preventDefault();
         if (found.length) foundLit = (foundLit + (key === "ArrowDown" ? 1 : found.length - 1)) % found.length;
+        browsed = true;
         return;
       }
-      if ((key === "Enter" || key === "Tab") && found.length) {
+      // A bare `:` offers emoji before anything is typed: Enter there still sends, unless the arrows chose one.
+      const bare = lookup.kind === "emoji" && !lookup.query && !browsed;
+      if ((key === "Enter" || key === "Tab") && found.length && !bare) {
         event.preventDefault();
         return pickFound(found[foundLit]);
       }
