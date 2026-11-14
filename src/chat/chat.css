@@ -342,6 +342,7 @@ button.row-file {
   font-weight: 500;
 }
 .tool-call-server {
+  margin-right: 0.3em;
   font-weight: 400;
   color: var(--ink-45);
 }
