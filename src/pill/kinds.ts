@@ -56,6 +56,8 @@ export interface PillKind {
   readonly open?: (ref: string, look: PillLook, event: MouseEvent) => void;
   /** More behaviour on the pill once resolved: a hover preview, what copying it gives. */
   readonly attach?: (ref: string, look: PillLook) => Attachment<HTMLElement> | undefined;
+  /** While resolving, a blank meta pill stands in for the meta its look will carry. */
+  readonly pendingMeta?: boolean;
   /** How long a resolved look is reused, in ms. Default 60 s. */
   readonly fresh?: number;
 }

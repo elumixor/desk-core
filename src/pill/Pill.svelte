@@ -31,6 +31,12 @@
   });
   /** `undefined` while asking, `null` when not found. */
   const look = $derived(asked instanceof Promise ? (answered?.for === asked ? answered.look : undefined) : (asked ?? null));
+  /** Blank bars while asking; the text then grows and fades in, once this pill has waited for it. */
+  const blank = $derived(look === undefined && !label);
+  let waited = $state(false);
+  $effect(() => {
+    if (blank) waited = true;
+  });
   const plain = $derived(text !== undefined && !look);
   const shown = $derived(look ?? { title: label || urn });
   const href = $derived(look ? (look.href ?? kind?.href?.(urn, look)) : undefined);
@@ -61,13 +67,14 @@
   <svelte:element
     this={href ? "a" : "span"}
     class="desk-pill {klass}"
-    class:pending={look === undefined}
+    class:pending={look === undefined && !blank}
+    class:arrived={waited && !blank}
     class:missing={look === null}
     class:done={shown.done}
     href={href}
     target={href && external ? "_blank" : undefined}
     rel={href && external ? "noopener" : undefined}
-    title={hint}
+    title={blank ? undefined : hint}
     data-urn={urn}
     data-kind={kind?.name}
     role={href ? undefined : "presentation"}
@@ -91,8 +98,13 @@
         {/if}
       </span>
     {/if}
-    <span class="title">{title}</span>
-    {#if shown.meta && "metaIcon" in shown && shown.metaIcon}
+    {#if blank}
+      <span class="skeleton title-skeleton"></span>
+      {#if kind?.pendingMeta}<span class="skeleton meta-skeleton"></span>{/if}
+    {:else}
+      <span class="title"><span class="text">{title}</span></span>
+    {/if}
+    {#if blank}{:else if shown.meta && "metaIcon" in shown && shown.metaIcon}
       {@const MetaIcon = shown.metaIcon as Component<{ size?: number | string }>}
       <span class="meta-pill"><MetaIcon size={11} />{shown.meta}</span>
     {:else if shown.meta}<span class="meta">{shown.meta}</span>{/if}
@@ -209,6 +221,67 @@
     min-width: 2em;
     overflow: hidden;
     text-overflow: clip; animation: clip-fade linear both; animation-timeline: scroll(self inline);
+  }
+
+  .skeleton {
+    flex: none;
+    height: 0.8em;
+    border-radius: 999px;
+    background: color-mix(in srgb, currentColor 10%, transparent);
+    animation: skeleton-pulse 1.2s ease-in-out infinite alternate;
+  }
+
+  .title-skeleton {
+    width: 7em;
+  }
+
+  .meta-skeleton {
+    width: 2.6em;
+    height: 1.1em;
+  }
+
+  @keyframes skeleton-pulse {
+    to {
+      opacity: 0.45;
+    }
+  }
+
+  /* From the skeleton's width to the text's own, the text fading in as it opens. */
+  .arrived .title {
+    interpolate-size: allow-keywords;
+    animation: clip-fade linear both, pill-grow 0.35s var(--ease, ease-out);
+    animation-timeline: scroll(self inline), auto;
+  }
+
+  .arrived .meta,
+  .arrived .meta-pill {
+    interpolate-size: allow-keywords;
+    overflow: hidden;
+    animation: pill-grow-meta 0.35s var(--ease, ease-out);
+  }
+
+  .arrived .text,
+  .arrived .meta-pill > :global(*) {
+    animation: pill-fade 0.35s ease-out;
+  }
+
+  @keyframes pill-grow {
+    from {
+      width: 7em;
+    }
+  }
+
+  @keyframes pill-grow-meta {
+    from {
+      width: 2.6em;
+      opacity: 0;
+    }
+  }
+
+  @keyframes pill-fade {
+    from {
+      opacity: 0;
+    }
   }
 
   .meta {
