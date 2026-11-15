@@ -44,7 +44,7 @@
         class="row"
         class:lit={index === selected}
         tabindex="-1"
-        onmouseenter={() => (selected = index)}
+        onmousemove={() => (selected = index)}
         onmousedown={(event) => event.preventDefault()}
         onclick={() => onpick(item)}
       >
