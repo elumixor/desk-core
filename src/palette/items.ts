@@ -15,6 +15,8 @@ export interface ListItem {
   readonly glyph?: string;
   /** A colour for the icon, any CSS colour. */
   readonly tint?: string;
+  /** The record behind the row, for the list's `lead` and `badge` snippets: rows without it draw the plain way. */
+  readonly data?: unknown;
   /** More words the row answers to, not drawn. */
   readonly keywords?: string;
   /** The label's characters the query matched; filled in by `filterItems`. */

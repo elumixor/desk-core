@@ -1,11 +1,12 @@
 <script lang="ts" generics="T extends ListItem">
-  import type { Component } from "svelte";
+  import type { Component, Snippet } from "svelte";
   import Highlighted from "./Highlighted.svelte";
   import type { ListItem } from "./items";
 
   /**
    * The rows of a desk list under their group headings, one lit: the ⌘K palette and the `@` menu draw the same way.
    * Keys stay with the owner (an input keeps focus); `selected` is the lit row, which scrolls into view as it moves.
+   * A row carrying `data` is drawn with `lead` in place of its icon (given the icon's size) and `badge` after its label.
    */
   let {
     items,
@@ -14,6 +15,8 @@
     empty = "Nothing matches.",
     loading = false,
     dense = false,
+    lead,
+    badge,
   }: {
     items: readonly T[];
     selected?: number;
@@ -21,6 +24,8 @@
     empty?: string;
     loading?: boolean;
     dense?: boolean;
+    lead?: Snippet<[T, number]>;
+    badge?: Snippet<[T]>;
   } = $props();
 
   let list = $state<HTMLUListElement>();
@@ -52,6 +57,7 @@
           {#if item.glyph}<span class="glyph">{item.glyph}</span>{:else if typeof item.icon === "string"}<img src={item.icon} alt="" />{:else if Icon}<Icon size={dense ? 15 : 17} />{/if}
         </span>
         <span class="label"><Highlighted text={item.label} matches={item.matches} /></span>
+        {#if badge && item.data !== undefined}{@render badge(item)}{/if}
         {#if item.hint}<span class="hint">{item.hint}</span>{/if}
       </button>
     </li>

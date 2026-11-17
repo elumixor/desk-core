@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tick } from "svelte";
+  import { type Snippet, tick } from "svelte";
   import { fade, scale } from "svelte/transition";
   import { isPaletteShortcut, menuKey } from "../keys";
   import ItemList from "./ItemList.svelte";
@@ -8,7 +8,7 @@
   /**
    * The suite's ⌘K: one box that finds anything in the app and runs any command. The app hands it every row it knows
    * (`items`: pages, commands, records) and, for what only a server can find, `search`. Rows marked `quiet` wait until
-   * something is typed. Up / Down or Ctrl+J / Ctrl+K move, Enter runs, Escape closes.
+   * something is typed. `lead` and `badge` draw the rows that carry `data` (an avatar, a pill), as in `ItemList`. Up / Down or Ctrl+J / Ctrl+K move, Enter runs, Escape closes.
    */
   let {
     items,
@@ -17,6 +17,8 @@
     placeholder = "Search or run a command…",
     shortcut = true,
     limit = 60,
+    lead,
+    badge,
   }: {
     items: readonly PaletteItem[];
     search?: (query: string, signal: AbortSignal) => Promise<readonly PaletteItem[]>;
@@ -24,6 +26,8 @@
     placeholder?: string;
     shortcut?: boolean;
     limit?: number;
+    lead?: Snippet<[PaletteItem, number]>;
+    badge?: Snippet<[PaletteItem]>;
   } = $props();
 
   const SEARCH_DELAY_MS = 150;
@@ -115,7 +119,7 @@
         <input bind:this={input} bind:value={query} onkeydown={onkey} {placeholder} aria-label="Search" autocomplete="off" spellcheck="false" />
       </label>
       <div class="results">
-        <ItemList items={shown} bind:selected onpick={run} loading={searching && !shown.length} empty={query.trim() ? `Nothing matches “${query.trim()}”.` : "Nothing here yet."} />
+        <ItemList items={shown} bind:selected onpick={run} {lead} {badge} loading={searching && !shown.length} empty={query.trim() ? `Nothing matches “${query.trim()}”.` : "Nothing here yet."} />
       </div>
     </div>
   </div>
